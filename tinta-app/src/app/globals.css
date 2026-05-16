@@ -2,26 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────
+   TINTA Design Tokens
+   ───────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Palette */
+  --color-base-light:     #FFFFFF;
+  --color-secondary-warm: #B9B6AD;
+  --color-secondary-blue: #AABED6;
+  --color-main:           #2D4E71;
+  --color-base-dark:      #111111;
+
+  /* Semantic */
+  --bg-page:        #FFFFFF;
+  --bg-sidebar:     #111111;
+  --bg-card:        #FFFFFF;
+  --text-primary:   #111111;
+  --text-secondary: #B9B6AD;
+  --text-on-dark:   #FFFFFF;
+  --accent:         #2D4E71;
+  --accent-light:   #AABED6;
+  --accent-hover:   #213a56;
+  --border:         #B9B6AD;
+  --flag-danger:    #c0392b;
+  --flag-warning:   #e67e22;
+  --flag-ok:        #2D4E71;
+
+  /* Typography */
+  --font-playfair: 'Playfair Display', serif;
+  --font-dm-sans:  'DM Sans', sans-serif;
+
+  /* Legacy Next.js vars — remapped to TINTA */
+  --background: #FFFFFF;
+  --foreground: #111111;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─────────────────────────────────────────────
+   Base
+   ───────────────────────────────────────────── */
+body {
+  color: var(--text-primary);
+  background: var(--bg-page);
+  font-family: var(--font-dm-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────────────────────────────────
+   Animations
+   ───────────────────────────────────────────── */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideRightIn {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateX(0px);
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .animate-slide-in-up {
+    animation: slideInUp 0.2s ease-out both;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.15s ease-out both;
+  }
+
+  .animate-fade-slide {
+    animation: fadeSlideIn 0.6s ease forwards;
+  }
+
+  .animate-slide-right {
+    animation: slideRightIn 0.8s ease forwards;
   }
 }
