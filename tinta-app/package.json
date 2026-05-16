@@ -1,0 +1,44 @@
+{
+  "name": "tinta-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.105.4",
+    "@tiptap/extension-character-count": "^3.23.4",
+    "@tiptap/extension-placeholder": "^3.23.4",
+    "@tiptap/pm": "^3.23.4",
+    "@tiptap/react": "^3.23.4",
+    "@tiptap/starter-kit": "^3.23.4",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^1.16.0",
+    "next": "14.2.35",
+    "react": "^18",
+    "react-dom": "^18",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.100.10",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "json2csv": "^6.0.0-alpha.2",
+    "postcss": "^8",
+    "recharts": "^3.8.1",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "uuid": "^14.0.0",
+    "zustand": "^5.0.13"
+  }
+}
