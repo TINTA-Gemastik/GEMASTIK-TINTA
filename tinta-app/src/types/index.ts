@@ -186,7 +186,8 @@ export interface PasteEvent {
   timestamp: number
 }
 
-export interface Reference {
+// Table: document_references ('references' is a reserved PostgreSQL keyword)
+export interface DocumentReference {
   id: string
   submission_id: string
   student_id: string
@@ -233,4 +234,26 @@ export interface SessionWithEvents extends Session {
 
 export interface TaskWithEnrollments extends Task {
   task_enrollments: TaskEnrollment[]
+}
+
+export interface SubmissionWithRefs extends Submission {
+  document_references: DocumentReference[]
+}
+
+// ─────────────────────────────────────────────
+// Recording Engine Types
+// ─────────────────────────────────────────────
+
+// The shape inserted into the events table (id + created_at are DB-generated)
+export interface TintaEventInsert {
+  event_id: string
+  event_type: EventType
+  timestamp: number
+  session_id: string
+  user_id: string
+  task_id: string
+  cursor_position: number | null
+  doc_length_before: number | null
+  doc_length_after: number | null
+  payload: Record<string, unknown>
 }

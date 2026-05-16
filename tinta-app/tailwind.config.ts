@@ -28,8 +28,10 @@ const config: Config = {
         "tinta-ok":           "#2D4E71",
       },
       fontFamily: {
-        geist:    ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        geist:      ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         "geist-mono": ["var(--font-geist-mono)", "monospace"],
+        playfair:   ["var(--font-playfair)", "Georgia", "serif"],
+        "dm-sans":  ["var(--font-dm-sans)", "system-ui", "sans-serif"],
       },
       borderColor: {
         DEFAULT: "#B9B6AD",

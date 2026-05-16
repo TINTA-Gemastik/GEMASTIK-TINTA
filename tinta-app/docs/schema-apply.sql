@@ -1,24 +1,16 @@
--- TINTA MVP Database Schema
--- Run this in the Supabase SQL editor
+-- ═══════════════════════════════════════════════════════════════════
+-- TINTA — Safe Migration (profiles already exists)
+-- Paste this entire block into Supabase SQL Editor → Run
+-- Safe to re-run: uses IF NOT EXISTS / DROP POLICY IF EXISTS
+-- ═══════════════════════════════════════════════════════════════════
 
--- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ─────────────────────────────────────────────
--- TABLES
+-- 1. REMAINING TABLES
 -- ─────────────────────────────────────────────
 
-CREATE TABLE profiles (
-  id            UUID PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
-  role          TEXT NOT NULL CHECK (role IN ('mahasiswa', 'dosen')),
-  full_name     TEXT NOT NULL,
-  npm           TEXT,
-  university    TEXT,
-  email         TEXT NOT NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
   id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   dosen_id          UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
   title             TEXT NOT NULL,
@@ -30,7 +22,7 @@ CREATE TABLE tasks (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE task_enrollments (
+CREATE TABLE IF NOT EXISTS task_enrollments (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   task_id     UUID NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
   student_id  UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -38,7 +30,7 @@ CREATE TABLE task_enrollments (
   UNIQUE (task_id, student_id)
 );
 
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
   id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   task_id             UUID NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
   user_id             UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -56,7 +48,7 @@ CREATE TABLE sessions (
   final_doc_length    INT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
   id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   event_id          UUID NOT NULL,
   event_type        TEXT NOT NULL,
@@ -71,7 +63,7 @@ CREATE TABLE events (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS submissions (
   id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   task_id                 UUID NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
   student_id              UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -94,7 +86,7 @@ CREATE TABLE submissions (
   finalized               BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE paste_events (
+CREATE TABLE IF NOT EXISTS paste_events (
   id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   session_id        UUID NOT NULL REFERENCES sessions (id) ON DELETE CASCADE,
   submission_id     UUID REFERENCES submissions (id) ON DELETE SET NULL,
@@ -112,8 +104,8 @@ CREATE TABLE paste_events (
   timestamp         BIGINT NOT NULL
 );
 
--- NOTE: named document_references — 'references' is a reserved PostgreSQL keyword
-CREATE TABLE document_references (
+-- 'references' is a reserved PostgreSQL keyword — using document_references
+CREATE TABLE IF NOT EXISTS document_references (
   id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   submission_id    UUID NOT NULL REFERENCES submissions (id) ON DELETE CASCADE,
   student_id       UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -127,7 +119,7 @@ CREATE TABLE document_references (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE anomaly_flags (
+CREATE TABLE IF NOT EXISTS anomaly_flags (
   id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   submission_id    UUID NOT NULL REFERENCES submissions (id) ON DELETE CASCADE,
   student_id       UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -137,7 +129,7 @@ CREATE TABLE anomaly_flags (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE dosen_reviews (
+CREATE TABLE IF NOT EXISTS dosen_reviews (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   submission_id UUID NOT NULL REFERENCES submissions (id) ON DELETE CASCADE,
   dosen_id      UUID NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
@@ -147,21 +139,22 @@ CREATE TABLE dosen_reviews (
 );
 
 -- ─────────────────────────────────────────────
--- INDEXES
+-- 2. INDEXES
 -- ─────────────────────────────────────────────
 
-CREATE INDEX idx_events_session_id    ON events (session_id);
-CREATE INDEX idx_events_task_id       ON events (task_id);
-CREATE INDEX idx_events_user_id       ON events (user_id);
-CREATE INDEX idx_sessions_task_id     ON sessions (task_id);
-CREATE INDEX idx_sessions_user_id     ON sessions (user_id);
-CREATE INDEX idx_submissions_task_id  ON submissions (task_id);
-CREATE INDEX idx_submissions_student  ON submissions (student_id);
+CREATE INDEX IF NOT EXISTS idx_events_session_id    ON events (session_id);
+CREATE INDEX IF NOT EXISTS idx_events_task_id       ON events (task_id);
+CREATE INDEX IF NOT EXISTS idx_events_user_id       ON events (user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_task_id     ON sessions (task_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id     ON sessions (user_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_task_id  ON submissions (task_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_student  ON submissions (student_id);
 
 -- ─────────────────────────────────────────────
--- ROW LEVEL SECURITY
+-- 3. ROW LEVEL SECURITY
 -- ─────────────────────────────────────────────
 
+-- Safe to re-run even if already enabled
 ALTER TABLE profiles            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE task_enrollments    ENABLE ROW LEVEL SECURITY;
@@ -173,7 +166,15 @@ ALTER TABLE document_references ENABLE ROW LEVEL SECURITY;
 ALTER TABLE anomaly_flags       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE dosen_reviews       ENABLE ROW LEVEL SECURITY;
 
--- profiles: readable by any authenticated user, writable only by the owner
+-- ─────────────────────────────────────────────
+-- 4. RLS POLICIES  (drop-if-exists → recreate)
+-- ─────────────────────────────────────────────
+
+-- profiles
+DROP POLICY IF EXISTS "profiles_select" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert" ON profiles;
+DROP POLICY IF EXISTS "profiles_update" ON profiles;
+
 CREATE POLICY "profiles_select" ON profiles
   FOR SELECT TO authenticated USING (TRUE);
 
@@ -184,6 +185,9 @@ CREATE POLICY "profiles_update" ON profiles
   FOR UPDATE TO authenticated USING (id = auth.uid());
 
 -- tasks
+DROP POLICY IF EXISTS "tasks_dosen_all"      ON tasks;
+DROP POLICY IF EXISTS "tasks_student_select" ON tasks;
+
 CREATE POLICY "tasks_dosen_all" ON tasks
   FOR ALL TO authenticated
   USING (dosen_id = auth.uid())
@@ -194,12 +198,15 @@ CREATE POLICY "tasks_student_select" ON tasks
   USING (
     EXISTS (
       SELECT 1 FROM task_enrollments
-      WHERE task_enrollments.task_id = tasks.id
+      WHERE task_enrollments.task_id   = tasks.id
         AND task_enrollments.student_id = auth.uid()
     )
   );
 
 -- task_enrollments
+DROP POLICY IF EXISTS "enrollments_dosen"          ON task_enrollments;
+DROP POLICY IF EXISTS "enrollments_student_select" ON task_enrollments;
+
 CREATE POLICY "enrollments_dosen" ON task_enrollments
   FOR ALL TO authenticated
   USING (
@@ -214,6 +221,9 @@ CREATE POLICY "enrollments_student_select" ON task_enrollments
   USING (student_id = auth.uid());
 
 -- sessions
+DROP POLICY IF EXISTS "sessions_student_all"   ON sessions;
+DROP POLICY IF EXISTS "sessions_dosen_select"  ON sessions;
+
 CREATE POLICY "sessions_student_all" ON sessions
   FOR ALL TO authenticated
   USING (user_id = auth.uid())
@@ -226,6 +236,9 @@ CREATE POLICY "sessions_dosen_select" ON sessions
   );
 
 -- events
+DROP POLICY IF EXISTS "events_student_all"  ON events;
+DROP POLICY IF EXISTS "events_dosen_select" ON events;
+
 CREATE POLICY "events_student_all" ON events
   FOR ALL TO authenticated
   USING (user_id = auth.uid())
@@ -238,6 +251,10 @@ CREATE POLICY "events_dosen_select" ON events
   );
 
 -- submissions
+DROP POLICY IF EXISTS "submissions_student_all"   ON submissions;
+DROP POLICY IF EXISTS "submissions_dosen_select"  ON submissions;
+DROP POLICY IF EXISTS "submissions_dosen_update"  ON submissions;
+
 CREATE POLICY "submissions_student_all" ON submissions
   FOR ALL TO authenticated
   USING (student_id = auth.uid())
@@ -256,6 +273,9 @@ CREATE POLICY "submissions_dosen_update" ON submissions
   );
 
 -- paste_events
+DROP POLICY IF EXISTS "paste_events_student_all"  ON paste_events;
+DROP POLICY IF EXISTS "paste_events_dosen_select" ON paste_events;
+
 CREATE POLICY "paste_events_student_all" ON paste_events
   FOR ALL TO authenticated
   USING (student_id = auth.uid())
@@ -268,6 +288,9 @@ CREATE POLICY "paste_events_dosen_select" ON paste_events
   );
 
 -- document_references
+DROP POLICY IF EXISTS "doc_refs_student_all"  ON document_references;
+DROP POLICY IF EXISTS "doc_refs_dosen_select" ON document_references;
+
 CREATE POLICY "doc_refs_student_all" ON document_references
   FOR ALL TO authenticated
   USING (student_id = auth.uid())
@@ -284,6 +307,9 @@ CREATE POLICY "doc_refs_dosen_select" ON document_references
   );
 
 -- anomaly_flags
+DROP POLICY IF EXISTS "anomaly_flags_student_select" ON anomaly_flags;
+DROP POLICY IF EXISTS "anomaly_flags_dosen_all"      ON anomaly_flags;
+
 CREATE POLICY "anomaly_flags_student_select" ON anomaly_flags
   FOR SELECT TO authenticated
   USING (student_id = auth.uid());
@@ -306,6 +332,9 @@ CREATE POLICY "anomaly_flags_dosen_all" ON anomaly_flags
   );
 
 -- dosen_reviews
+DROP POLICY IF EXISTS "dosen_reviews_dosen_all"      ON dosen_reviews;
+DROP POLICY IF EXISTS "dosen_reviews_student_select" ON dosen_reviews;
+
 CREATE POLICY "dosen_reviews_dosen_all" ON dosen_reviews
   FOR ALL TO authenticated
   USING (dosen_id = auth.uid())
