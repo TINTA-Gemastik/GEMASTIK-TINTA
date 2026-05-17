@@ -154,7 +154,6 @@ export default function MahasiswaDashboard() {
   const submittedTasks = taskRows.filter(r =>  r.submission)
   const expiredTasks   = taskRows.filter(r => !r.submission && isPast(new Date(r.task.deadline)))
 
-<<<<<<< HEAD
   const recentSessions: SessionWithTask[] = (() => {
     const allSessions = taskRows
       .flatMap(r => r.sessions.map(s => ({ ...s, task: r.task })))
@@ -170,13 +169,6 @@ export default function MahasiswaDashboard() {
       })
       .slice(0, 8)
   })()
-=======
-  // Flat list of all sessions, newest first
-  const recentSessions: SessionWithTask[] = taskRows
-    .flatMap(r => r.sessions.map(s => ({ ...s, task: r.task })))
-    .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())
-    .slice(0, 8)
->>>>>>> db7c24a75140555146751fd59005393b88aff93d
 
   const activeSessionId = recentSessions.find(s => !s.ended_at)?.id ?? null
 
