@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { AnimatePresence, motion } from 'framer-motion'
-import { AlertTriangle, Send } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { TintaEditor, type TintaEditorHandle, type PasteItem } from '@/components/editor/TintaEditor'
 import { AnalyticsSidebar } from '@/components/editor/AnalyticsSidebar'
+import { SubmitConfirmModal } from '@/components/editor/SubmitConfirmModal'
+import { GlowButton } from '@/components/ui/glow-button'
+import { ThemeToggle } from '@/components/ui/curtain-theme-toggle'
 import { NotificationPopover } from '@/components/ui/notification-popover'
 import type { Task, TintaEventInsert } from '@/types'
 
@@ -44,6 +46,10 @@ export default function WritePage() {
 
   const handlePasteItemCreated = useCallback((item: PasteItem) => {
     setPasteItems(prev => [...prev, item])
+  }, [])
+
+  const handlePasteItemUpdated = useCallback((id: string, updates: Partial<PasteItem>) => {
+    setPasteItems(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
   }, [])
 
   const handlePasteUpdated = useCallback(async (id: string, updates: Record<string, unknown>) => {
@@ -166,17 +172,17 @@ export default function WritePage() {
           )}
         </div>
 
-        {/* Right — notifications + submit + save & close */}
+        {/* Right — theme toggle + notifications + submit + save & close */}
         <div className="flex items-center gap-2 shrink-0">
+          <ThemeToggle />
           <NotificationPopover />
-          <button
+          <GlowButton
             onClick={() => setShowSubmit(true)}
             disabled={closing || submitting}
-            className="flex items-center gap-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-4 py-2 rounded-xl transition-all disabled:opacity-60 whitespace-nowrap"
+            className="whitespace-nowrap"
           >
-            <Send size={14} />
             Submit Assignment
-          </button>
+          </GlowButton>
           <button
             onClick={handleClose}
             disabled={closing || submitting}
@@ -196,6 +202,7 @@ export default function WritePage() {
           onEventEmitted={handleEventEmitted}
           onDocLengthChange={handleDocLengthChange}
           onPasteItemCreated={handlePasteItemCreated}
+          onPasteItemUpdated={handlePasteItemUpdated}
           onSelectionChange={handleSelectionChange}
         />
       </main>
@@ -217,81 +224,15 @@ export default function WritePage() {
       {/* ── Submit confirmation modal ─────────────────────────────────────── */}
       <AnimatePresence>
         {showSubmit && (
-          <>
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px]"
-              onClick={() => !submitting && setShowSubmit(false)}
-            />
-            <motion.div
-              key="modal"
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 12 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-            >
-              <div
-                className="pointer-events-auto w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-[#B9B6AD]/15 overflow-hidden"
-                onClick={e => e.stopPropagation()}
-              >
-                {/* Header */}
-                <div className="px-6 pt-6 pb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <AlertTriangle size={17} className="text-amber-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#111111]">Submit Assignment?</p>
-                      <p className="text-xs text-[#B9B6AD] mt-1 leading-relaxed">
-                        You cannot edit your writing after submitting. Your session data and
-                        writing analytics will be finalized.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Error message */}
-                {submitError && (
-                  <div className="mx-6 mb-3 px-3 py-2 bg-red-50 rounded-lg border border-red-200">
-                    <p className="text-xs text-red-700">{submitError}</p>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="px-6 pb-6 flex gap-3">
-                  <button
-                    onClick={() => setShowSubmit(false)}
-                    disabled={submitting}
-                    className="flex-1 text-sm font-medium bg-[#F8F7F5] hover:bg-[#EDECE9] text-[#111111] px-4 py-2.5 rounded-xl border border-[#B9B6AD]/20 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleSubmitConfirm}
-                    disabled={submitting}
-                    className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl transition-colors disabled:opacity-60"
-                  >
-                    {submitting ? (
-                      <>
-                        <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                        Submitting…
-                      </>
-                    ) : (
-                      <>
-                        <Send size={14} />
-                        Yes, Submit
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </>
+          <SubmitConfirmModal
+            wordCount={Math.floor(currentDocLength / 5.5)}
+            sessionNumber={sessionNumber}
+            undeclaredPastes={pasteItems.filter(p => !(p.declared_type && p.declared_type !== '')).length}
+            submitting={submitting}
+            error={submitError}
+            onConfirm={handleSubmitConfirm}
+            onCancel={() => !submitting && setShowSubmit(false)}
+          />
         )}
       </AnimatePresence>
 

@@ -99,6 +99,7 @@ export interface TintaEditorProps {
   onEventEmitted?:      (event: TintaEventInsert) => void
   onDocLengthChange?:   (len: number) => void
   onPasteItemCreated?:  (item: PasteItem) => void
+  onPasteItemUpdated?:  (id: string, updates: Partial<PasteItem>) => void
   onSelectionChange?:   (text: string) => void
 }
 
@@ -111,7 +112,7 @@ interface InnerProps extends TintaEditorProps {
 }
 
 const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
-  ({ sessionId, taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onSelectionChange }, ref) => {
+  ({ sessionId, taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange }, ref) => {
 
     // ── Core recording state ────────────────────────────────────────────────
     const startedAtRef  = useRef(Date.now())
@@ -303,8 +304,15 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
           update.source_year   = sourceData.year   || null
         }
         await supabase.from('paste_events').update(update).eq('id', pasteEventId)
+        onPasteItemUpdated?.(pasteEventId, {
+          declared_type: declaredType,
+          source_title:  sourceData?.title  || null,
+          source_author: sourceData?.author || null,
+          source_url:    sourceData?.url    || null,
+          source_year:   sourceData?.year   || null,
+        })
       },
-      []
+      [onPasteItemUpdated]
     )
 
     const onDismissPaste = useCallback(() => setPendingPaste(null), [])
@@ -444,7 +452,7 @@ TintaEditorInner.displayName = 'TintaEditorInner'
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
-  ({ taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onSelectionChange }, ref) => {
+  ({ taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange }, ref) => {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [error,     setError]     = useState<string | null>(null)
 
@@ -487,6 +495,7 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
         onEventEmitted={onEventEmitted}
         onDocLengthChange={onDocLengthChange}
         onPasteItemCreated={onPasteItemCreated}
+        onPasteItemUpdated={onPasteItemUpdated}
         onSelectionChange={onSelectionChange}
       />
     )

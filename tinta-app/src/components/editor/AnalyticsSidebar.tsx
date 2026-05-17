@@ -49,14 +49,14 @@ function AIScanPanel({
   onScanText:             (text: string) => Promise<number>
   onHighlightAISentences: (enabled: boolean) => void
 }) {
-  const [scanning,        setScanning]        = useState(false)
-  const [showAISentences, setShowAISentences]  = useState(false)
-  const [scanTarget,      setScanTarget]       = useState<'full' | 'selected'>('full')
+  const [scanning,        setScanning]       = useState(false)
+  const [showAISentences, setShowAISentences] = useState(false)
+  const [scanTarget,      setScanTarget]      = useState<'full' | 'selected'>('full')
   const [result, setResult] = useState<{
-    probability:  number
-    label:        string
-    confidence:   string
-    scannedText:  string
+    probability: number
+    label:       string
+    confidence:  string
+    scannedText: string
   } | null>(null)
 
   const handleScan = async () => {
@@ -67,14 +67,17 @@ function AIScanPanel({
       const probability = Math.round(prob * 100)
       setResult({
         probability,
-        label: probability < 20 ? 'Human' : probability < 60 ? 'Mixed' : 'AI',
+        label:
+          probability < 20 ? 'Human' :
+          probability < 60 ? 'Mixed' : 'AI',
         confidence:
           probability < 20 ? 'Highly confident this text is entirely human' :
           probability < 60 ? 'Text shows mixed human and AI characteristics' :
           'Highly confident this text was AI generated',
-        scannedText: scanTarget === 'selected'
-          ? `"${selectedText.slice(0, 40)}…"`
-          : 'Entire document',
+        scannedText:
+          scanTarget === 'selected'
+            ? `"${selectedText.slice(0, 40)}…"`
+            : 'Entire document',
       })
     } finally {
       setScanning(false)
@@ -100,17 +103,17 @@ function AIScanPanel({
 
       {/* Section header */}
       <div className="flex items-center gap-2 mb-3">
-        <RefreshCw size={12} className="text-[#AABED6]" />
-        <span className="text-xs font-semibold text-white">AI Scan</span>
+        <RefreshCw size={12} className="text-[#2D4E71]" />
+        <span className="text-xs font-semibold text-[#111111]">AI Scan</span>
       </div>
 
       {/* Result card */}
-      <div className="bg-white/5 rounded-2xl border border-white/10 p-4 mb-3">
+      <div className="bg-[#F8F7F5] rounded-2xl border border-[#B9B6AD]/20 p-4 mb-3">
         <div className="flex items-center gap-4">
           {/* SVG probability ring */}
           <div className="relative shrink-0">
             <svg width="52" height="52" viewBox="0 0 52 52">
-              <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+              <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="4" />
               {result && (
                 <circle
                   cx="26" cy="26" r="22"
@@ -132,14 +135,14 @@ function AIScanPanel({
           </div>
 
           <div className="flex-1">
-            <p className="text-sm font-bold text-white">
+            <p className="text-sm font-bold text-[#111111]">
               {result ? `${result.probability}% AI probability` : 'Not scanned yet'}
             </p>
-            <p className="text-[11px] text-[#AABED6] mt-0.5 leading-snug">
+            <p className="text-[11px] text-[#B9B6AD] mt-0.5 leading-snug">
               {result ? result.confidence : 'Click Scan to analyze this document'}
             </p>
             {result && (
-              <p className="text-[10px] text-white/30 mt-1">
+              <p className="text-[10px] text-[#B9B6AD]/70 mt-1">
                 Scanned: {result.scannedText}
               </p>
             )}
@@ -150,11 +153,11 @@ function AIScanPanel({
       {/* Scan controls */}
       <div className="flex items-center gap-2 mb-3">
         {/* Scan target toggle */}
-        <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-0.5 flex-1">
+        <div className="flex items-center bg-[#F8F7F5] rounded-xl border border-[#B9B6AD]/20 p-0.5 flex-1">
           <button
             onClick={() => setScanTarget('full')}
             className={`flex-1 text-[11px] px-2 py-1.5 rounded-lg transition-colors font-medium ${
-              scanTarget === 'full' ? 'bg-[#2D4E71] text-white' : 'text-[#AABED6] hover:text-white'
+              scanTarget === 'full' ? 'bg-[#2D4E71] text-white' : 'text-[#B9B6AD] hover:text-[#111111]'
             }`}
           >
             Full Doc
@@ -163,7 +166,7 @@ function AIScanPanel({
             onClick={() => setScanTarget('selected')}
             disabled={!selectedText}
             className={`flex-1 text-[11px] px-2 py-1.5 rounded-lg transition-colors font-medium disabled:opacity-30 ${
-              scanTarget === 'selected' && selectedText ? 'bg-[#2D4E71] text-white' : 'text-[#AABED6] hover:text-white'
+              scanTarget === 'selected' && selectedText ? 'bg-[#2D4E71] text-white' : 'text-[#B9B6AD] hover:text-[#111111]'
             }`}
           >
             {selectedText ? `"${selectedText.slice(0, 10)}…"` : 'Select text first'}
@@ -174,7 +177,7 @@ function AIScanPanel({
         <button
           onClick={handleScan}
           disabled={scanning}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#2D4E71] text-white text-[11px] font-semibold hover:bg-[#1e3a56] transition-colors disabled:opacity-50 whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#2D4E71] text-white text-[11px] font-semibold hover:bg-[#213a56] transition-colors disabled:opacity-50 whitespace-nowrap"
         >
           {scanning
             ? <RefreshCw size={11} className="animate-spin" />
@@ -184,18 +187,18 @@ function AIScanPanel({
       </div>
 
       {/* Show AI Sentences toggle */}
-      <div className="flex items-center justify-between py-2.5 border-t border-white/10">
+      <div className="flex items-center justify-between py-2.5 border-t border-[#B9B6AD]/20">
         <div className="flex items-center gap-2">
-          <AlignLeft size={13} className="text-[#AABED6]" />
-          <span className="text-xs text-white font-medium">Show AI Sentences</span>
-          <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center">
-            <Info size={9} className="text-[#AABED6]" />
+          <AlignLeft size={13} className="text-[#2D4E71]" />
+          <span className="text-xs text-[#111111] font-medium">Show AI Sentences</span>
+          <div className="w-4 h-4 rounded-full border border-[#B9B6AD]/30 flex items-center justify-center">
+            <Info size={9} className="text-[#B9B6AD]" />
           </div>
         </div>
         <button
           onClick={handleToggle}
           className={`relative w-10 h-5 rounded-full transition-colors ${
-            showAISentences ? 'bg-[#2D4E71]' : 'bg-white/20'
+            showAISentences ? 'bg-[#2D4E71]' : 'bg-[#B9B6AD]/30'
           }`}
         >
           <motion.div
@@ -206,7 +209,7 @@ function AIScanPanel({
         </button>
       </div>
 
-      {/* Legend (shown when toggle is on) */}
+      {/* Legend */}
       <AnimatePresence>
         {showAISentences && (
           <motion.div
@@ -215,7 +218,7 @@ function AIScanPanel({
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-4 py-2 border-t border-white/10">
+            <div className="flex items-center gap-4 py-2 border-t border-[#B9B6AD]/20">
               {[
                 { bars: [0.3, 0.6, 0.9], color: 'bg-amber-400', label: 'Low AI' },
                 { bars: [0.5, 0.8, 1.0], color: 'bg-red-400',   label: 'High AI' },
@@ -227,7 +230,7 @@ function AIScanPanel({
                       <div key={i} className={`w-1.5 h-3 rounded-sm ${color}`} style={{ opacity: o }} />
                     ))}
                   </div>
-                  <span className="text-[10px] text-[#AABED6]">{label}</span>
+                  <span className="text-[10px] text-[#B9B6AD]">{label}</span>
                 </div>
               ))}
             </div>
@@ -238,7 +241,7 @@ function AIScanPanel({
   )
 }
 
-// ─── Paste item card (dark) ───────────────────────────────────────────────────
+// ─── Paste item card (light) ──────────────────────────────────────────────────
 
 const TYPE_OPTIONS = [
   { value: 'citation', label: 'Citation from source', icon: BookOpen  },
@@ -253,17 +256,19 @@ function PasteItemCard({
   item:     PasteItem
   onUpdate: (id: string, updates: Record<string, unknown>) => void
 }) {
-  const [expanded,  setExpanded]  = useState(!item.declared_type)
+  const isDeclared = !!(item.declared_type && item.declared_type !== '')
+  const [expanded,  setExpanded]  = useState(!isDeclared)
   const [type,      setType]      = useState(item.declared_type ?? '')
   const [title,     setTitle]     = useState(item.source_title ?? '')
   const [fileName,  setFileName]  = useState('')
 
-  const isDeclared = !!item.declared_type
   const time = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (
     <div className={`rounded-xl border overflow-hidden ${
-      isDeclared ? 'border-white/10 bg-white/5' : 'border-amber-500/30 bg-amber-500/10'
+      isDeclared
+        ? 'border-[#B9B6AD]/20 bg-[#f7f7f6]'
+        : 'border-amber-200 bg-amber-50'
     }`}>
       {/* Collapsed row */}
       <button
@@ -271,24 +276,24 @@ function PasteItemCard({
         className="w-full flex items-center gap-2 px-3 py-2.5 text-left"
       >
         <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${
-          isDeclared ? 'bg-[#2D4E71]/30' : 'bg-amber-500/20'
+          isDeclared ? 'bg-[#AABED6]/20' : 'bg-amber-100'
         }`}>
           {isDeclared
-            ? <CheckCircle size={11} className="text-[#AABED6]" />
-            : <AlertCircle size={11} className="text-amber-400" />}
+            ? <CheckCircle size={11} className="text-[#2D4E71]" />
+            : <AlertCircle size={11} className="text-amber-600" />}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-white truncate">
+          <p className="text-[11px] text-[#111111] truncate">
             &quot;{item.pasted_text.slice(0, 30)}…&quot;
           </p>
-          <p className="text-[10px] text-white/40">
+          <p className="text-[10px] text-[#B9B6AD]">
             {item.pasted_char_count} chars · {time}
             {isDeclared ? ` · ${item.declared_type}` : ' · Needs declaration'}
           </p>
         </div>
         {expanded
-          ? <ChevronUp   size={11} className="text-white/30 shrink-0" />
-          : <ChevronDown size={11} className="text-white/30 shrink-0" />}
+          ? <ChevronUp   size={11} className="text-[#B9B6AD] shrink-0" />
+          : <ChevronDown size={11} className="text-[#B9B6AD] shrink-0" />}
       </button>
 
       {/* Expanded form */}
@@ -299,12 +304,12 @@ function PasteItemCard({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="overflow-hidden border-t border-white/10"
+            className="overflow-hidden border-t border-[#B9B6AD]/20"
           >
             <div className="px-3 pb-3 pt-2 space-y-2">
 
               {/* Text preview */}
-              <p className="text-[10px] text-white/40 font-mono leading-relaxed line-clamp-2 bg-white/5 rounded-lg p-2">
+              <p className="text-[10px] text-[#B9B6AD] font-mono leading-relaxed line-clamp-2 bg-white rounded-lg p-2 border border-[#B9B6AD]/15">
                 &quot;{item.pasted_text}&quot;
               </p>
 
@@ -317,11 +322,13 @@ function PasteItemCard({
                     key={opt.value}
                     onClick={() => setType(opt.value)}
                     className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-left transition-all ${
-                      sel ? 'border-[#AABED6]/60 bg-[#2D4E71]/30' : 'border-white/10 hover:border-white/20'
+                      sel
+                        ? 'border-[#2D4E71] bg-[#AABED6]/20'
+                        : 'border-[#B9B6AD]/30 hover:border-[#B9B6AD]/60'
                     }`}
                   >
-                    <Icon size={11} className={sel ? 'text-[#AABED6]' : 'text-white/30'} />
-                    <span className={`text-[11px] ${sel ? 'text-white font-medium' : 'text-white/50'}`}>
+                    <Icon size={11} className={sel ? 'text-[#2D4E71]' : 'text-[#B9B6AD]'} />
+                    <span className={`text-[11px] ${sel ? 'text-[#111111] font-medium' : 'text-[#B9B6AD]'}`}>
                       {opt.label}
                     </span>
                   </button>
@@ -334,13 +341,13 @@ function PasteItemCard({
                 placeholder="Source title (optional)"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full text-[11px] px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white placeholder:text-white/30 focus:outline-none focus:border-[#AABED6]/50"
+                className="w-full text-[11px] px-2.5 py-1.5 rounded-lg border border-[#B9B6AD]/30 bg-white text-[#111111] placeholder:text-[#B9B6AD] focus:outline-none focus:border-[#2D4E71]"
               />
 
               {/* Upload file placeholder */}
-              <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-dashed border-white/20 hover:border-[#AABED6]/40 cursor-pointer transition-colors">
-                <Upload size={11} className="text-[#AABED6]" />
-                <span className="text-[11px] text-[#AABED6]">
+              <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-dashed border-[#B9B6AD]/40 hover:border-[#2D4E71]/40 cursor-pointer transition-colors">
+                <Upload size={11} className="text-[#2D4E71]" />
+                <span className="text-[11px] text-[#2D4E71]">
                   {fileName || 'Upload source file'}
                 </span>
                 <input
@@ -359,7 +366,7 @@ function PasteItemCard({
                   setExpanded(false)
                 }}
                 disabled={!type}
-                className="w-full py-1.5 rounded-lg bg-[#2D4E71] text-white text-[11px] font-semibold hover:bg-[#1e3a56] transition-colors disabled:opacity-30"
+                className="w-full py-1.5 rounded-lg bg-[#2D4E71] text-white text-[11px] font-semibold hover:bg-[#213a56] transition-colors disabled:opacity-30"
               >
                 Save Declaration
               </button>
@@ -413,7 +420,7 @@ export function AnalyticsSidebar({
   const revisionDepth = revisionBase > 0 ? charsDeleted / revisionBase : 0
   const organicRatio  = currentDocLength > 0 ? Math.min(1, charsTyped / currentDocLength) : 1
 
-  const undeclaredCount = pasteItems.filter(p => !p.declared_type).length
+  const undeclaredCount = pasteItems.filter(p => !(p.declared_type && p.declared_type !== '')).length
 
   // IKD — only computed when sidebar is open
   const ikdResult    = isOpen ? analyzeKeystrokeDynamics(events) : null
@@ -425,8 +432,8 @@ export function AnalyticsSidebar({
       onClick={() => setActiveSection(id)}
       className={`flex-1 py-2 text-[11px] font-semibold transition-colors border-b-2 ${
         activeSection === id
-          ? 'text-white border-[#AABED6]'
-          : 'text-white/40 hover:text-white/70 border-transparent'
+          ? 'text-[#2D4E71] border-[#2D4E71]'
+          : 'text-[#B9B6AD] hover:text-[#111111] border-transparent'
       }`}
     >
       {label}
@@ -439,7 +446,7 @@ export function AnalyticsSidebar({
   )
 
   const ScoreBar = ({ value, color }: { value: number; color: string }) => (
-    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-1">
+    <div className="w-full h-1 bg-[#B9B6AD]/20 rounded-full overflow-hidden mt-1">
       <motion.div
         className="h-full rounded-full"
         style={{ backgroundColor: color }}
@@ -455,8 +462,8 @@ export function AnalyticsSidebar({
       {/* ── Eye icon toggle tab ─────────────────────────────────────────────── */}
       <button
         onClick={() => setIsOpen(o => !o)}
-        title={isOpen ? 'Hide AI Vision' : 'Open AI Vision'}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-8 h-16 bg-[#111111] text-white rounded-l-2xl shadow-xl hover:bg-[#1e1e1e] transition-colors border border-white/10 border-r-0"
+        title={isOpen ? "Hide Tinta's Dashboard" : "Open Tinta's Dashboard"}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-8 h-16 bg-white text-[#2D4E71] rounded-l-2xl shadow-lg hover:bg-[#f7f7f6] transition-colors border border-[#B9B6AD]/30 border-r-0"
       >
         {isOpen ? <EyeOff size={15} /> : <Eye size={15} />}
       </button>
@@ -469,34 +476,34 @@ export function AnalyticsSidebar({
             animate={{ x: 0,   opacity: 1 }}
             exit={{ x: 340,    opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed right-8 top-0 bottom-0 w-[320px] z-30 bg-[#111111] flex flex-col overflow-hidden border-l border-white/10 shadow-2xl"
+            className="fixed right-8 top-4 max-h-[calc(100vh-32px)] w-[320px] z-30 bg-white flex flex-col overflow-hidden rounded-[30px] border border-[#B9B6AD]/20 shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#B9B6AD]/20 shrink-0">
               <div className="flex items-center gap-2">
-                <Eye size={14} className="text-[#AABED6]" />
-                <span className="text-sm font-bold text-white tracking-tight">AI Vision</span>
-                <span className="text-[10px] text-white/30 font-normal">Session {sessionNumber}</span>
+                <Eye size={14} className="text-[#2D4E71]" />
+                <span className="text-sm font-bold text-[#111111] tracking-tight">Tinta&apos;s Dashboard</span>
+                <span className="text-[10px] text-[#B9B6AD] font-normal">Session {sessionNumber}</span>
               </div>
               <div className="flex items-center gap-2">
                 {/* Recording timer */}
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/15 rounded-lg border border-emerald-500/30">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] text-emerald-400 font-mono">
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] text-emerald-600 font-mono">
                     {String(sessionMins).padStart(2, '0')}:{String(sessionSecs).padStart(2, '0')}
                   </span>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-6 h-6 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors"
+                  className="w-6 h-6 rounded-lg hover:bg-[#f7f7f6] flex items-center justify-center transition-colors"
                 >
-                  <X size={13} className="text-[#AABED6]" />
+                  <X size={13} className="text-[#B9B6AD]" />
                 </button>
               </div>
             </div>
 
             {/* Tab bar */}
-            <div className="flex border-b border-white/10 px-4 shrink-0">
+            <div className="flex border-b border-[#B9B6AD]/20 px-4 shrink-0">
               <TabBtn id="scan"      label="AI Scan" />
               <TabBtn id="analytics" label="Analytics" />
               <TabBtn id="pastes"    label="Pastes" badge={undeclaredCount} />
@@ -519,23 +526,23 @@ export function AnalyticsSidebar({
                 <div className="px-4 pt-4 space-y-3 pb-6">
 
                   {/* Git delta */}
-                  <div className="bg-[#1a1a1a] rounded-2xl border border-white/10 p-3 font-mono">
-                    <p className="text-[10px] text-[#AABED6] uppercase tracking-widest mb-2">Session Delta</p>
-                    <p className="text-sm text-emerald-400 font-bold">
+                  <div className="bg-[#F8F7F5] rounded-2xl border border-[#B9B6AD]/20 p-3 font-mono">
+                    <p className="text-[10px] text-[#B9B6AD] uppercase tracking-widest mb-2">Session Delta</p>
+                    <p className="text-sm text-emerald-600 font-bold">
                       +{netInsertions}{' '}
-                      <span className="text-white/30 font-normal text-xs">net additions</span>
+                      <span className="text-[#B9B6AD]/60 font-normal text-xs">net additions</span>
                     </p>
-                    <p className="text-sm text-red-400 font-bold">
+                    <p className="text-sm text-red-500 font-bold">
                       −{netDeletions}{' '}
-                      <span className="text-white/30 font-normal text-xs">net deletions</span>
+                      <span className="text-[#B9B6AD]/60 font-normal text-xs">net deletions</span>
                     </p>
-                    <p className="text-xs text-[#AABED6] mt-1">
+                    <p className="text-xs text-[#B9B6AD] mt-1">
                       {wordsDelta >= 0 ? '+' : ''}{wordsDelta} words this session
                     </p>
                   </div>
 
                   {/* Stats grid */}
-                  <div className="bg-white/5 rounded-2xl border border-white/10 divide-y divide-white/5">
+                  <div className="bg-[#F8F7F5] rounded-2xl border border-[#B9B6AD]/20 divide-y divide-[#B9B6AD]/15">
                     {[
                       { icon: Type,     label: 'Characters typed',   value: charsTyped.toLocaleString()   },
                       { icon: Trash2,   label: 'Characters deleted',  value: charsDeleted.toLocaleString() },
@@ -545,30 +552,30 @@ export function AnalyticsSidebar({
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center justify-between px-3 py-2.5">
                         <div className="flex items-center gap-2">
-                          <Icon size={11} className="text-[#AABED6]" />
-                          <span className="text-[11px] text-[#AABED6]">{label}</span>
+                          <Icon size={11} className="text-[#2D4E71]" />
+                          <span className="text-[11px] text-[#B9B6AD]">{label}</span>
                         </div>
-                        <span className="text-[11px] font-semibold text-white">{value}</span>
+                        <span className="text-[11px] font-semibold text-[#111111]">{value}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Writing signals */}
-                  <p className="text-[10px] text-[#AABED6] uppercase tracking-widest">Writing Signals</p>
+                  <p className="text-[10px] text-[#B9B6AD] uppercase tracking-widest">Writing Signals</p>
 
                   {/* Revision depth */}
-                  <div className="bg-white/5 rounded-xl border border-white/10 p-3">
+                  <div className="bg-[#F8F7F5] rounded-xl border border-[#B9B6AD]/20 p-3">
                     <div className="flex justify-between">
-                      <span className="text-[11px] text-white font-medium">Revision Depth</span>
-                      <span className="text-[11px] font-bold text-[#AABED6]">
+                      <span className="text-[11px] text-[#111111] font-medium">Revision Depth</span>
+                      <span className="text-[11px] font-bold text-[#2D4E71]">
                         {Math.round(revisionDepth * 100)}%
                       </span>
                     </div>
                     <ScoreBar
                       value={Math.min(revisionDepth * 2.5, 1)}
-                      color={revisionDepth > 0.05 ? '#AABED6' : '#f59e0b'}
+                      color={revisionDepth > 0.05 ? '#2D4E71' : '#f59e0b'}
                     />
-                    <p className="text-[10px] text-white/40 mt-1">
+                    <p className="text-[10px] text-[#B9B6AD] mt-1">
                       {revisionDepth < 0.02
                         ? 'Very low — healthy writing revises more'
                         : revisionDepth < 0.15
@@ -578,10 +585,10 @@ export function AnalyticsSidebar({
                   </div>
 
                   {/* Organic ratio */}
-                  <div className="bg-white/5 rounded-xl border border-white/10 p-3">
+                  <div className="bg-[#F8F7F5] rounded-xl border border-[#B9B6AD]/20 p-3">
                     <div className="flex justify-between">
-                      <span className="text-[11px] text-white font-medium">Organic Writing</span>
-                      <span className="text-[11px] font-bold text-emerald-400">
+                      <span className="text-[11px] text-[#111111] font-medium">Organic Writing</span>
+                      <span className="text-[11px] font-bold text-emerald-600">
                         {Math.round(organicRatio * 100)}%
                       </span>
                     </div>
@@ -593,19 +600,19 @@ export function AnalyticsSidebar({
 
                   {/* Keystroke rhythm */}
                   {ikdResult && ikdFormatted && (
-                    <div className="bg-white/5 rounded-xl border border-white/10 p-3">
+                    <div className="bg-[#F8F7F5] rounded-xl border border-[#B9B6AD]/20 p-3">
                       <div className="flex justify-between">
-                        <span className="text-[11px] text-white font-medium">Typing Rhythm</span>
+                        <span className="text-[11px] text-[#111111] font-medium">Typing Rhythm</span>
                         <span className="text-[11px] font-bold" style={{ color: ikdFormatted.color }}>
                           {ikdFormatted.label}
                         </span>
                       </div>
                       <ScoreBar value={ikdResult.score} color={ikdFormatted.color} />
-                      <p className="text-[10px] text-white/40 mt-1">{ikdFormatted.detail}</p>
+                      <p className="text-[10px] text-[#B9B6AD] mt-1">{ikdFormatted.detail}</p>
                       {ikdResult.burstPatternCount > 0 && (
-                        <div className="flex items-center gap-1.5 mt-2 px-2 py-1.5 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                          <AlertTriangle size={9} className="text-amber-400" />
-                          <p className="text-[10px] text-amber-300">
+                        <div className="flex items-center gap-1.5 mt-2 px-2 py-1.5 bg-amber-50 rounded-lg border border-amber-200">
+                          <AlertTriangle size={9} className="text-amber-600" />
+                          <p className="text-[10px] text-amber-700">
                             {ikdResult.burstPatternCount} read-then-type burst{ikdResult.burstPatternCount > 1 ? 's' : ''} detected
                           </p>
                         </div>
@@ -614,9 +621,9 @@ export function AnalyticsSidebar({
                   )}
 
                   {/* Footer */}
-                  <div className="flex items-start gap-2 px-3 py-2.5 bg-[#2D4E71]/20 rounded-xl border border-[#2D4E71]/30">
-                    <Info size={11} className="text-[#AABED6] mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-[#AABED6] leading-relaxed">
+                  <div className="flex items-start gap-2 px-3 py-2.5 bg-[#AABED6]/10 rounded-xl border border-[#AABED6]/20">
+                    <Info size={11} className="text-[#2D4E71] mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-[#2D4E71] leading-relaxed">
                       These analytics are visible to you only. Your lecturer sees a summary after submission.
                     </p>
                   </div>
@@ -628,12 +635,12 @@ export function AnalyticsSidebar({
               {activeSection === 'pastes' && (
                 <div className="px-4 pt-4 pb-6">
                   {pasteItems.length === 0 ? (
-                    <div className="text-center py-10 text-white/30 text-xs">
+                    <div className="text-center py-10 text-[#B9B6AD] text-xs">
                       No paste events yet
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-[10px] text-[#AABED6] uppercase tracking-widest mb-3">
+                      <p className="text-[10px] text-[#B9B6AD] uppercase tracking-widest mb-3">
                         {undeclaredCount > 0
                           ? `${undeclaredCount} paste${undeclaredCount > 1 ? 's' : ''} need attention`
                           : 'All pastes declared ✓'}
