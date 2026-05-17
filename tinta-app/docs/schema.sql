@@ -183,6 +183,29 @@ CREATE POLICY "profiles_insert" ON profiles
 CREATE POLICY "profiles_update" ON profiles
   FOR UPDATE TO authenticated USING (id = auth.uid());
 
+-- ─────────────────────────────────────────────
+-- HELPER FUNCTIONS FOR RLS (Mencegah Infinite Recursion)
+-- ─────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION get_dosen_owned_tasks()
+RETURNS SETOF uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT id FROM tasks WHERE dosen_id = auth.uid();
+$$;
+
+CREATE OR REPLACE FUNCTION get_student_enrolled_tasks()
+RETURNS SETOF uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT task_id FROM task_enrollments WHERE student_id = auth.uid();
+$$;
+
 -- tasks
 CREATE POLICY "tasks_dosen_all" ON tasks
   FOR ALL TO authenticated
@@ -191,23 +214,13 @@ CREATE POLICY "tasks_dosen_all" ON tasks
 
 CREATE POLICY "tasks_student_select" ON tasks
   FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM task_enrollments
-      WHERE task_enrollments.task_id = tasks.id
-        AND task_enrollments.student_id = auth.uid()
-    )
-  );
+  USING (id IN (SELECT get_student_enrolled_tasks()));
 
 -- task_enrollments
 CREATE POLICY "enrollments_dosen" ON task_enrollments
   FOR ALL TO authenticated
-  USING (
-    EXISTS (SELECT 1 FROM tasks WHERE tasks.id = task_enrollments.task_id AND tasks.dosen_id = auth.uid())
-  )
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM tasks WHERE tasks.id = task_enrollments.task_id AND tasks.dosen_id = auth.uid())
-  );
+  USING (task_id IN (SELECT get_dosen_owned_tasks()))
+  WITH CHECK (task_id IN (SELECT get_dosen_owned_tasks()));
 
 CREATE POLICY "enrollments_student_select" ON task_enrollments
   FOR SELECT TO authenticated
