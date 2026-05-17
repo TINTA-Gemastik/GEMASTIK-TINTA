@@ -303,7 +303,7 @@ export default function WritePage() {
     if (closing) return
     setClosing(true)
     try {
-      await editorRef.current?.close()
+      await editorRef.current?.close({ initialText: initialDocText, currentText: currentDocText })
       await saveDraft()
     } catch {}
     router.push('/mahasiswa/dashboard')
@@ -315,7 +315,7 @@ export default function WritePage() {
     setSubmitError(null)
 
     try {
-      await editorRef.current?.close()
+      await editorRef.current?.close({ initialText: initialDocText, currentText: currentDocText })
 
       const finalDocText = editorRef.current?.getText() ?? ''
 
@@ -429,6 +429,7 @@ export default function WritePage() {
         currentDocText={currentDocText}
         selectedText={selectedText}
         userName={userName}
+        taskId={taskId}
         onPasteUpdated={handlePasteUpdated}
         onScanText={handleScanText}
         onHighlightAISentences={handleHighlightAISentences}
