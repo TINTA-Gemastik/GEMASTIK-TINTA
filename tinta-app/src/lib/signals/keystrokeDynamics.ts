@@ -56,9 +56,17 @@ export function analyzeKeystrokeDynamics(events: any[]): KeystrokeDynamicsResult
   const stddev     = Math.sqrt(variance)
   const overallCV  = mean > 0 ? stddev / mean : 0
 
-  // ── Sliding-window analysis (size: 50, step: 25) ─────────────────────────
-  const WINDOW_SIZE = 50
-  const STEP        = 25
+  // ── Global uniformity short-circuit ─────────────────────────────────────
+  // If the entire session has very low CV (very uniform pacing), it's already
+  // suspicious even before window analysis. We add a pre-penalty here.
+  let globalRoboticPenalty = 0
+  if (overallCV < 0.25 && ikis.length >= 30) globalRoboticPenalty = 0.30
+  else if (overallCV < 0.35 && ikis.length >= 50) globalRoboticPenalty = 0.15
+
+  // ── Sliding-window analysis (size: 30, step: 15) ─────────────────────────
+  // Smaller windows catch short robotic bursts (e.g. quick keyboard slides)
+  const WINDOW_SIZE = 30
+  const STEP        = 15
   const windows: IKIWindow[] = []
 
   for (let i = 0; i + WINDOW_SIZE <= ikis.length; i += STEP) {
@@ -75,7 +83,9 @@ export function analyzeKeystrokeDynamics(events: any[]): KeystrokeDynamicsResult
       stddev:         wStddev,
       cv:             wCV,
       keystrokeCount: WINDOW_SIZE,
-      flagged:        wCV < 0.35 && wMean < 300,  // suspiciously robotic
+      // Lowered CV threshold (0.40 catches more uniform patterns) and
+      // tightened mean threshold (200ms = ~5 chars/sec, still very fast)
+      flagged:        wCV < 0.40 && wMean < 200,
     })
   }
 
@@ -123,7 +133,7 @@ export function analyzeKeystrokeDynamics(events: any[]): KeystrokeDynamicsResult
   // ── Score (0–1, higher = more human) ──────────────────────────────────────
   const roboticPenalty = (roboticWindowCount / Math.max(windows.length, 1)) * 0.6
   const burstPenalty   = Math.min(burstPatternCount * 0.15, 0.4)
-  const score          = Math.max(0, 1 - roboticPenalty - burstPenalty)
+  const score          = Math.max(0, 1 - roboticPenalty - burstPenalty - globalRoboticPenalty)
 
   return {
     overallMean:       mean,
@@ -146,24 +156,29 @@ export function formatDynamicsScore(result: KeystrokeDynamicsResult): {
   color:  string
   detail: string
 } {
-  if (result.totalWindows === 0) {
+  if (result.totalWindows === 0 && result.overallCV === 0) {
     return { label: 'Insufficient data', color: '#B9B6AD', detail: 'Need more typing to analyze' }
   }
-  if (result.score >= 0.8) {
+  // Tightened: Natural now requires score >= 0.75 (was 0.80)
+  if (result.score >= 0.75) {
     return {
       label:  'Natural',
       color:  '#16a34a',
       detail: `Typing rhythm is organic (CV: ${result.overallCV.toFixed(2)})`,
     }
   }
-  if (result.score >= 0.6) {
-    return { label: 'Mostly natural', color: '#2D4E71', detail: 'Minor uniformity detected' }
-  }
-  if (result.score >= 0.4) {
+  if (result.score >= 0.55) {
     return {
-      label:  'Somewhat uniform',
+      label:  'Mostly natural',
+      color:  '#2D4E71',
+      detail: `Minor uniformity detected (CV: ${result.overallCV.toFixed(2)})`,
+    }
+  }
+  if (result.score >= 0.35) {
+    return {
+      label:  'Suspicious',
       color:  '#f59e0b',
-      detail: `${result.roboticWindowCount} uniform windows detected`,
+      detail: `${result.roboticWindowCount} uniform window${result.roboticWindowCount !== 1 ? 's' : ''} detected`,
     }
   }
   return {

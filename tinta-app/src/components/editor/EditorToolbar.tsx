@@ -162,28 +162,40 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       {/* GROUP 4 — Text alignment ─────────────────────────────────────────── */}
       <button
         className={btn(editor.isActive({ textAlign: 'left' }))}
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        onClick={() => {
+          const { from, to } = editor.state.selection
+          editor.chain().focus().setTextSelection({ from, to }).setTextAlign('left').run()
+        }}
         title="Rata kiri"
       >
         <AlignLeft size={15} />
       </button>
       <button
         className={btn(editor.isActive({ textAlign: 'center' }))}
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        onClick={() => {
+          const { from, to } = editor.state.selection
+          editor.chain().focus().setTextSelection({ from, to }).setTextAlign('center').run()
+        }}
         title="Rata tengah"
       >
         <AlignCenter size={15} />
       </button>
       <button
         className={btn(editor.isActive({ textAlign: 'right' }))}
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        onClick={() => {
+          const { from, to } = editor.state.selection
+          editor.chain().focus().setTextSelection({ from, to }).setTextAlign('right').run()
+        }}
         title="Rata kanan"
       >
         <AlignRight size={15} />
       </button>
       <button
         className={btn(editor.isActive({ textAlign: 'justify' }))}
-        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        onClick={() => {
+          const { from, to } = editor.state.selection
+          editor.chain().focus().setTextSelection({ from, to }).setTextAlign('justify').run()
+        }}
         title="Rata penuh"
       >
         <AlignJustify size={15} />
@@ -248,8 +260,13 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         value={headingLevel}
         onChange={e => {
           const v = e.target.value
-          if (v === '0') editor.chain().focus().setParagraph().run()
-          else editor.chain().focus().setHeading({ level: parseInt(v) as 1 | 2 | 3 }).run()
+          // Capture current selection before .focus() resets it
+          const { from, to } = editor.state.selection
+          if (v === '0') {
+            editor.chain().focus().setTextSelection({ from, to }).setParagraph().run()
+          } else {
+            editor.chain().focus().setTextSelection({ from, to }).setHeading({ level: parseInt(v) as 1 | 2 | 3 }).run()
+          }
         }}
       >
         <option value="0">Normal</option>
@@ -310,7 +327,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
             const reader = new FileReader()
             reader.onload = ev => {
               const src = ev.target?.result as string
-              editor.chain().focus().setImage({ src }).run()
+              editor.chain().focus().setResizableImage({ src }).run()
             }
             reader.readAsDataURL(file)
             // Reset so same file can be re-selected

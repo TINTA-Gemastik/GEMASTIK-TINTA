@@ -13,6 +13,7 @@ import {
 } from '@/lib/replay/speedCalculator'
 import { TimelineGraph }   from '@/components/replay/TimelineGraph'
 import { SentenceHeatmap } from '@/components/replay/SentenceHeatmap'
+import { ScrubBar }        from '@/components/replay/ScrubBar'
 import type { TintaEvent, Session, PasteEvent, Task } from '@/types'
 
 const TICK_MS   = 100   // real-time interval between playback ticks
@@ -474,7 +475,19 @@ export default function ReplayPage() {
         </aside>
       </div>
 
-      {/* ── Timeline scrub bar ────────────────────────────────────────────────── */}
+      {/* ── ScrubBar (draggable playhead) ───────────────────────────────────── */}
+      <div className="shrink-0 relative bg-white border-t border-[#B9B6AD]/20 px-3 py-0 z-30">
+        <ScrubBar
+          firstTs={firstTs}
+          lastTs={lastTs}
+          currentTimestamp={currentTimestamp}
+          sessions={sessions}
+          pasteEvents={pasteEvents}
+          onSeek={handleSeek}
+        />
+      </div>
+
+      {/* ── Timeline scrub chart (click-to-seek) ──────────────────────────── */}
       <TimelineGraph
         timeline={filteredTimeline}
         pasteEvents={pasteEvents}

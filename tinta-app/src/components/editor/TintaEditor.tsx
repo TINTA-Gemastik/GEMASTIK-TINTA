@@ -12,7 +12,6 @@ import Underline from '@tiptap/extension-underline'
 import TextAlign from '@tiptap/extension-text-align'
 import Subscript from '@tiptap/extension-subscript'
 import Superscript from '@tiptap/extension-superscript'
-import Image from '@tiptap/extension-image'
 import { Extension } from '@tiptap/core'
 import {
   forwardRef,
@@ -32,6 +31,8 @@ import { PageLayoutSettings, DEFAULT_LAYOUT, type LayoutSettings } from './PageL
 import { EditorContextMenu }   from './EditorContextMenu'
 import { TintaRecorder }    from './TintaRecorder'
 import { BehaviorTracker }  from './BehaviorTracker'
+import { AIHighlightExtension, type AIHighlightRange } from './AIHighlightExtension'
+import { ResizableImage }   from './ResizableImage'
 import { eventSender }      from '@/lib/supabase/eventSender'
 import { createSession, closeSession } from '@/lib/supabase/sessionManager'
 import { createClient }     from '@/lib/supabase/client'
@@ -88,9 +89,11 @@ export interface PasteItem {
 }
 
 export interface TintaEditorHandle {
-  close:   () => Promise<void>
-  getText: () => string
-  getHTML: () => string
+  close:             () => Promise<void>
+  getText:           () => string
+  getHTML:           () => string
+  applyAIHighlights: (ranges: AIHighlightRange[]) => void
+  clearAIHighlights: () => void
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -219,8 +222,9 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         TextAlign.configure({ types: ['heading', 'paragraph'] }),
         Subscript,
         Superscript,
-        Image.configure({ inline: false, allowBase64: true }),
+        ResizableImage,
         TabIndent,
+        AIHighlightExtension,
         Placeholder.configure({ placeholder: 'Mulai menulis di sini… / Start writing here…' }),
         CharacterCount,
         TintaRecorder.configure({ sessionId, userId, taskId, onEvent: handleEvent }),
@@ -258,7 +262,7 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
             const reader = new FileReader()
             reader.onload = ev => {
               const src = ev.target?.result as string
-              editor.chain().focus().setImage({ src }).run()
+              editor.chain().focus().setResizableImage({ src }).run()
             }
             reader.readAsDataURL(file)
           }
@@ -297,7 +301,7 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
       }
     }, [sessionId, userId, taskId, handleEvent])
 
-    // ── Expose close() ──────────────────────────────────────────────────────
+    // ── Expose handle ──────────────────────────────────────────────────────
     useImperativeHandle(ref, () => ({
       close: async () => {
         if (isClosingRef.current) return
@@ -307,6 +311,12 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
       },
       getText: () => editor?.getText() ?? '',
       getHTML: () => editor?.getHTML() ?? '',
+      applyAIHighlights: (ranges: AIHighlightRange[]) => {
+        if (editor) editor.commands.setAIHighlightRanges(ranges)
+      },
+      clearAIHighlights: () => {
+        if (editor) editor.commands.clearAIHighlightRanges()
+      },
     }))
 
     // Load draft content if initialContent arrives after editor mounts (async timing)
@@ -484,9 +494,11 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
 
     const innerRef = useRef<TintaEditorHandle>(null)
     useImperativeHandle(ref, () => ({
-      close:   async () => { await innerRef.current?.close() },
-      getText: ()      => innerRef.current?.getText() ?? '',
-      getHTML: ()      => innerRef.current?.getHTML() ?? '',
+      close:             async () => { await innerRef.current?.close() },
+      getText:           ()      => innerRef.current?.getText() ?? '',
+      getHTML:           ()      => innerRef.current?.getHTML() ?? '',
+      applyAIHighlights: (ranges) => { innerRef.current?.applyAIHighlights(ranges) },
+      clearAIHighlights: ()      => { innerRef.current?.clearAIHighlights() },
     }))
 
     useEffect(() => {

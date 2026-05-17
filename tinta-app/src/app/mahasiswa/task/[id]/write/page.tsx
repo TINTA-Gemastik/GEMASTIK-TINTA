@@ -40,8 +40,31 @@ export default function WritePage() {
   const [pasteItems,       setPasteItems]       = useState<PasteItem[]>([])
   const [selectedText,     setSelectedText]     = useState('')
 
-  const editorRef      = useRef<TintaEditorHandle>(null)
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const editorRef        = useRef<TintaEditorHandle>(null)
+  const saveTimeoutRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const localSaveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // ── Local draft helpers ────────────────────────────────────────────────────
+  const localKey = userId ? `tinta_draft_${taskId}_${userId}` : null
+
+  const saveLocalDraft = useCallback(() => {
+    if (!localKey) return
+    const contentHTML = editorRef.current?.getHTML() ?? ''
+    const contentText = editorRef.current?.getText() ?? ''
+    if (!contentHTML || contentHTML === '<p></p>') return
+    try {
+      localStorage.setItem(localKey, JSON.stringify({
+        contentHTML,
+        contentText,
+        savedAt: new Date().toISOString(),
+      }))
+    } catch {}
+  }, [localKey])
+
+  const clearLocalDraft = useCallback(() => {
+    if (!localKey) return
+    try { localStorage.removeItem(localKey) } catch {}
+  }, [localKey])
 
   // ── Draft persistence ───────────────────────────────────────────────────────
 
@@ -71,25 +94,40 @@ export default function WritePage() {
       return false
     }
     setLastSavedAt(new Date())
+    // Supabase has the draft — the localStorage backup is no longer needed
+    clearLocalDraft()
     return true
-  }, [userId, taskId])
+  }, [userId, taskId, clearLocalDraft])
 
-  // Debounced auto-save on content change (10 s)
+  // Debounced auto-save on content change (10 s for Supabase, 5s local)
   useEffect(() => {
     if (!userId) return
+    // Immediate local save on every content change (cheap)
+    saveLocalDraft()
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     saveTimeoutRef.current = setTimeout(() => { void saveDraft() }, 10000)
     return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDocLength, userId])
 
-  // Interval auto-save every 60 seconds
+  // Interval auto-save: Supabase every 60s, localStorage every 5s
   useEffect(() => {
     if (!userId) return
-    const id = setInterval(() => { void saveDraft() }, 60000)
-    return () => clearInterval(id)
+    const supabaseId = setInterval(() => { void saveDraft() }, 60000)
+    localSaveIntervalRef.current = setInterval(() => { saveLocalDraft() }, 5000)
+    return () => {
+      clearInterval(supabaseId)
+      if (localSaveIntervalRef.current) clearInterval(localSaveIntervalRef.current)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
+
+  // Emergency local save on tab close / navigation away
+  useEffect(() => {
+    const onUnload = () => saveLocalDraft()
+    window.addEventListener('beforeunload', onUnload)
+    return () => window.removeEventListener('beforeunload', onUnload)
+  }, [saveLocalDraft])
 
   // ── Event handlers ──────────────────────────────────────────────────────────
 
@@ -244,10 +282,91 @@ export default function WritePage() {
   }, [liveEvents, currentDocLength])
 
   const handleHighlightAISentences = useCallback((enabled: boolean) => {
-    const editorEl = document.querySelector('.ProseMirror')
-    if (enabled) editorEl?.classList.add('show-ai-highlights')
-    else         editorEl?.classList.remove('show-ai-highlights')
-  }, [])
+    if (!enabled) {
+      editorRef.current?.clearAIHighlights()
+      return
+    }
+
+    // Build flagged time ranges from robotic keystroke windows
+    const keystrokeEvents = liveEvents
+      .filter(e => e.event_type === 'keystroke' && !e.payload?.is_delete_key)
+      .sort((a, b) => a.timestamp - b.timestamp)
+
+    // Collect timestamps where uniformity was detected (IKI < 200ms and CV < 0.40 in bursts)
+    const suspiciousTimestamps = new Set<number>()
+    const WINDOW = 30
+    for (let i = 0; i + WINDOW <= keystrokeEvents.length; i += 15) {
+      const slice = keystrokeEvents.slice(i, i + WINDOW)
+      const ikis = slice.slice(1).map((k, idx) => k.timestamp - slice[idx].timestamp).filter(v => v < 30000)
+      if (ikis.length < 10) continue
+      const mean = ikis.reduce((a, b) => a + b, 0) / ikis.length
+      const cv   = mean > 0
+        ? Math.sqrt(ikis.reduce((a, b) => a + (b - mean) ** 2, 0) / ikis.length) / mean
+        : 1
+      if (cv < 0.40 && mean < 200) {
+        slice.forEach(k => suspiciousTimestamps.add(k.timestamp))
+      }
+    }
+
+    // Map suspicious timestamps to character offsets in the doc
+    // We use the recorded cursor_position from events
+    const suspiciousCursorPositions = new Set<number>()
+    for (const e of liveEvents) {
+      if (suspiciousTimestamps.has(e.timestamp) && e.cursor_position != null) {
+        suspiciousCursorPositions.add(e.cursor_position)
+      }
+    }
+
+    // Split doc text into sentences and check if any cursor hit falls inside
+    const docText = editorRef.current?.getText() ?? ''
+    if (!docText || suspiciousCursorPositions.size === 0) {
+      editorRef.current?.clearAIHighlights()
+      return
+    }
+
+    // Build sentence ranges relative to doc start (ProseMirror offsets start at 1)
+    const sentencePattern = /[^.!?]+[.!?]*/g
+    const ranges: { from: number; to: number; level: 'high' | 'low' }[] = []
+    let match: RegExpExecArray | null
+    let charOffset = 0
+    // Account for ProseMirror doc root node (offset by 1)
+    const pmOffset = 1
+
+    while ((match = sentencePattern.exec(docText)) !== null) {
+      const sentStart = match.index
+      const sentEnd   = match.index + match[0].length
+
+      // Check if any suspicious cursor fell within this sentence
+      let hitCount = 0
+      for (const cp of Array.from(suspiciousCursorPositions)) {
+        if (cp >= sentStart && cp < sentEnd) hitCount++
+      }
+
+      if (hitCount > 0) {
+        ranges.push({
+          from:  sentStart + pmOffset,
+          to:    sentEnd + pmOffset,
+          level: hitCount > 3 ? 'high' : 'low',
+        })
+      }
+      charOffset = sentEnd
+    }
+    void charOffset
+
+    if (ranges.length > 0) {
+      editorRef.current?.applyAIHighlights(ranges)
+    } else {
+      // Fallback: if no per-cursor data, highlight the last 20% of doc as low
+      const len = docText.length
+      if (len > 50) {
+        editorRef.current?.applyAIHighlights([{
+          from:  Math.floor(len * 0.8) + pmOffset,
+          to:    len + pmOffset,
+          level: 'low',
+        }])
+      }
+    }
+  }, [liveEvents, editorRef])
 
   // ── Init: auth + task + draft load ──────────────────────────────────────────
 
@@ -287,9 +406,24 @@ export default function WritePage() {
         .eq('student_id', user.id)
         .maybeSingle()
 
-      if (draft?.content_html) setInitialContent(draft.content_html)
-      if (draft?.content_text) setInitialDocText(draft.content_text)
-      if (draft?.saved_at)     setLastSavedAt(new Date(draft.saved_at))
+      if (draft?.content_html) {
+        setInitialContent(draft.content_html)
+        setInitialDocText(draft.content_text ?? '')
+        if (draft.saved_at) setLastSavedAt(new Date(draft.saved_at))
+      } else {
+        // Fallback: check localStorage for an emergency draft (from a crashed session)
+        const localKey = `tinta_draft_${taskId}_${user.id}`
+        try {
+          const raw = localStorage.getItem(localKey)
+          if (raw) {
+            const parsed = JSON.parse(raw) as { contentHTML: string; savedAt: string }
+            if (parsed.contentHTML && parsed.contentHTML !== '<p></p>') {
+              setInitialContent(parsed.contentHTML)
+              setLastSavedAt(new Date(parsed.savedAt))
+            }
+          }
+        } catch {}
+      }
 
       setTaskLoaded(true)
     }
@@ -303,9 +437,17 @@ export default function WritePage() {
     if (closing) return
     setClosing(true)
     try {
-      await editorRef.current?.close()
+      // Save draft FIRST (before closing session) — this is the critical fix.
+      // If we close session first and routing happens before saveDraft resolves,
+      // the draft is never persisted.
       await saveDraft()
-    } catch {}
+      // Also save locally so we have an emergency backup
+      saveLocalDraft()
+      // Now close the recording session
+      await editorRef.current?.close()
+    } catch (err) {
+      console.error('Close error (draft may still be saved locally):', err)
+    }
     router.push('/mahasiswa/dashboard')
   }
 

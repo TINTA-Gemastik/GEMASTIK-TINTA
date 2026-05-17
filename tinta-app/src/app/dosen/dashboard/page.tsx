@@ -398,7 +398,7 @@ export default function DosenDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredRows.map(({ profile, submission, sessions, topFlag }) => {
+                      {filteredRows.map(({ profile, submission, sessions }) => {
                         const st  = statusBadge(submission, sessions)
                         const totalMs = sessions.reduce((s, se) => s + (se.duration_active_ms ?? 0), 0)
 

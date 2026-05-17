@@ -3,9 +3,28 @@ import type { TintaEventInsert } from '@/types'
 import { estimateWordDiffFromEvents } from '@/lib/signals/lineDiff'
 
 // ─── createSession ────────────────────────────────────────────────────────────
+// Reuses an existing open session (ended_at IS NULL) for the same task+user
+// to prevent duplicate session rows on page reload or quick re-entry.
 
 export async function createSession(taskId: string, userId: string): Promise<string> {
   const supabase = createClient()
+
+  // Check for an existing open session first
+  const { data: existing } = await supabase
+    .from('sessions')
+    .select('id')
+    .eq('task_id', taskId)
+    .eq('user_id', userId)
+    .is('ended_at', null)
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (existing?.id) {
+    return existing.id
+  }
+
+  // No open session — create a new one
   const { data, error } = await supabase
     .from('sessions')
     .insert({ task_id: taskId, user_id: userId })

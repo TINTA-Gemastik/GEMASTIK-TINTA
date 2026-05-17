@@ -208,7 +208,8 @@ export function analyzeAdvancedPatterns(events: AnyEvent[]): AdvancedPatternResu
   let backtrackCount = 0, totalCursorMoves = 0
   for (let i = 1; i < cursorEvents.length; i++) {
     const delta = cursorEvents[i].cursor_position - cursorEvents[i - 1].cursor_position
-    if (delta < -15) backtrackCount++
+    // Only count jumps >= 50 chars backward as suspicious (ignores inline edits/word nav)
+    if (delta < -50) backtrackCount++
     totalCursorMoves++
   }
 
@@ -221,7 +222,9 @@ export function analyzeAdvancedPatterns(events: AnyEvent[]): AdvancedPatternResu
   else if (cursorBacktrackRate < 0.20) linearityScore = 0.10
   else                                 linearityScore = 0.00
 
-  if (linearityScore > 0.5) {
+  // Only flag linearity when corroborated by low intra-segment revision
+  // (prevents false positives from normal buzzword typing / inline navigation)
+  if (linearityScore > 0.5 && intraSegmentRevisionScore > 0.40) {
     flags.push(`Writing is unusually linear — organic writers edit earlier sections more frequently`)
   }
 
