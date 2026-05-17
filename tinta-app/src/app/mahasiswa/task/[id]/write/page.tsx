@@ -437,9 +437,13 @@ export default function WritePage() {
     if (closing) return
     setClosing(true)
     try {
+<<<<<<< HEAD
       // Save draft FIRST (before closing session) — this is the critical fix.
       // If we close session first and routing happens before saveDraft resolves,
       // the draft is never persisted.
+=======
+      await editorRef.current?.close({ initialText: initialDocText, currentText: currentDocText })
+>>>>>>> db7c24a75140555146751fd59005393b88aff93d
       await saveDraft()
       // Also save locally so we have an emergency backup
       saveLocalDraft()
@@ -457,7 +461,7 @@ export default function WritePage() {
     setSubmitError(null)
 
     try {
-      await editorRef.current?.close()
+      await editorRef.current?.close({ initialText: initialDocText, currentText: currentDocText })
 
       const finalDocText = editorRef.current?.getText() ?? ''
 
@@ -571,6 +575,7 @@ export default function WritePage() {
         currentDocText={currentDocText}
         selectedText={selectedText}
         userName={userName}
+        taskId={taskId}
         onPasteUpdated={handlePasteUpdated}
         onScanText={handleScanText}
         onHighlightAISentences={handleHighlightAISentences}

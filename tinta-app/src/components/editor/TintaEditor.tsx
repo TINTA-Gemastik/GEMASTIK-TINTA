@@ -89,11 +89,17 @@ export interface PasteItem {
 }
 
 export interface TintaEditorHandle {
+<<<<<<< HEAD
   close:             () => Promise<void>
   getText:           () => string
   getHTML:           () => string
   applyAIHighlights: (ranges: AIHighlightRange[]) => void
   clearAIHighlights: () => void
+=======
+  close:   (opts?: { initialText?: string; currentText?: string }) => Promise<void>
+  getText: () => string
+  getHTML: () => string
+>>>>>>> db7c24a75140555146751fd59005393b88aff93d
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -303,11 +309,11 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
 
     // ── Expose handle ──────────────────────────────────────────────────────
     useImperativeHandle(ref, () => ({
-      close: async () => {
+      close: async (opts?: { initialText?: string; currentText?: string }) => {
         if (isClosingRef.current) return
         isClosingRef.current = true
         await eventSender.flush()
-        await closeSession(sessionId, eventsRef.current, startedAtRef.current)
+        await closeSession(sessionId, eventsRef.current, startedAtRef.current, opts?.initialText, opts?.currentText)
       },
       getText: () => editor?.getText() ?? '',
       getHTML: () => editor?.getHTML() ?? '',
@@ -494,11 +500,17 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
 
     const innerRef = useRef<TintaEditorHandle>(null)
     useImperativeHandle(ref, () => ({
+<<<<<<< HEAD
       close:             async () => { await innerRef.current?.close() },
       getText:           ()      => innerRef.current?.getText() ?? '',
       getHTML:           ()      => innerRef.current?.getHTML() ?? '',
       applyAIHighlights: (ranges) => { innerRef.current?.applyAIHighlights(ranges) },
       clearAIHighlights: ()      => { innerRef.current?.clearAIHighlights() },
+=======
+      close:   async (opts?) => { await innerRef.current?.close(opts) },
+      getText: ()      => innerRef.current?.getText() ?? '',
+      getHTML: ()      => innerRef.current?.getHTML() ?? '',
+>>>>>>> db7c24a75140555146751fd59005393b88aff93d
     }))
 
     useEffect(() => {
@@ -506,6 +518,19 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
         .then(setSessionId)
         .catch(err => setError(err.message))
     }, [taskId, userId])
+
+    // Beacon session close when tab is closed without Save & Close
+    useEffect(() => {
+      if (!sessionId) return
+      const handleBeforeUnload = () => {
+        navigator.sendBeacon(
+          '/api/sessions/close',
+          JSON.stringify({ session_id: sessionId, ended_at: new Date().toISOString() })
+        )
+      }
+      window.addEventListener('beforeunload', handleBeforeUnload)
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [sessionId])
 
     if (error) {
       return (

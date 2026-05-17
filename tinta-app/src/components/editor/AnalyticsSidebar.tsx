@@ -9,7 +9,7 @@ import {
   AlignLeft,
   Scan, ChevronDown, ChevronUp,
   Upload, BookOpen, FileText, StickyNote,
-  AlertCircle,
+  AlertCircle, Play,
 } from 'lucide-react'
 import { analyzeKeystrokeDynamics, formatDynamicsScore } from '@/lib/signals/keystrokeDynamics'
 import { computeWordDiff, estimateWordDiffFromEvents } from '@/lib/signals/lineDiff'
@@ -39,6 +39,7 @@ interface AnalyticsSidebarProps {
   userName?:               string
   initialDocText?:         string
   currentDocText?:         string
+  taskId?:                 string
   onPasteUpdated:          (id: string, updates: Record<string, unknown>) => void
   onScanText:              (text: string) => Promise<{
     probability:     number
@@ -476,6 +477,7 @@ export function AnalyticsSidebar({
   currentDocText,
   selectedText,
   userName,
+  taskId,
   onPasteUpdated,
   onScanText,
   onHighlightAISentences,
@@ -709,6 +711,19 @@ export function AnalyticsSidebar({
                       These analytics are visible to you only. Your lecturer sees a summary after submission.
                     </p>
                   </div>
+
+                  {/* Watch Replay */}
+                  {taskId && (
+                    <a
+                      href={`/mahasiswa/task/${taskId}/replay`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-2 rounded-xl border border-[#2D4E71]/30 text-[#2D4E71] text-[11px] font-medium hover:bg-[#2D4E71]/5 transition-colors"
+                    >
+                      <Play size={11} />
+                      Watch Replay
+                    </a>
+                  )}
 
                 </div>
               )}
