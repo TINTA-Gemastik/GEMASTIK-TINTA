@@ -89,17 +89,11 @@ export interface PasteItem {
 }
 
 export interface TintaEditorHandle {
-<<<<<<< HEAD
-  close:             () => Promise<void>
+  close:             (opts?: { initialText?: string; currentText?: string }) => Promise<void>
   getText:           () => string
   getHTML:           () => string
   applyAIHighlights: (ranges: AIHighlightRange[]) => void
   clearAIHighlights: () => void
-=======
-  close:   (opts?: { initialText?: string; currentText?: string }) => Promise<void>
-  getText: () => string
-  getHTML: () => string
->>>>>>> db7c24a75140555146751fd59005393b88aff93d
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -500,17 +494,11 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
 
     const innerRef = useRef<TintaEditorHandle>(null)
     useImperativeHandle(ref, () => ({
-<<<<<<< HEAD
-      close:             async () => { await innerRef.current?.close() },
+      close:             async (opts?) => { await innerRef.current?.close(opts) },
       getText:           ()      => innerRef.current?.getText() ?? '',
       getHTML:           ()      => innerRef.current?.getHTML() ?? '',
       applyAIHighlights: (ranges) => { innerRef.current?.applyAIHighlights(ranges) },
       clearAIHighlights: ()      => { innerRef.current?.clearAIHighlights() },
-=======
-      close:   async (opts?) => { await innerRef.current?.close(opts) },
-      getText: ()      => innerRef.current?.getText() ?? '',
-      getHTML: ()      => innerRef.current?.getHTML() ?? '',
->>>>>>> db7c24a75140555146751fd59005393b88aff93d
     }))
 
     useEffect(() => {
