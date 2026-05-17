@@ -28,7 +28,7 @@ const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial; delay: string }) => (
-  <div className={`${delay} flex items-start gap-3 mt-5 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-5 w-full lg:w-[85%] xl:w-[70%]`}>
+  <div className={`${delay} flex items-start gap-3 mt-5 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-5 w-full lg:w-[85%] xl:w-[80%]`}>
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img src={testimonial.avatarSrc} className="h-10 w-10 shrink-0 object-cover rounded-2xl" alt="avatar" />
     <div className="text-sm leading-snug">
@@ -70,10 +70,10 @@ export const SignInPage: React.FC<SignInPageProps> = ({
           <div className="mb-9">
             <img 
               src="icons/logo.png"
-              className="w-[50%] mt-2 mb-2"
+              className="w-[60%] mt-2 mb-2"
             />
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs tracking-[0.3em] uppercase text-[#B9B6AD] font-medium">Platform Integritas Akademik</span>
+              <span className="text-[10px] tracking-[0.3em] uppercase text-[#B9B6AD] font-medium">Tracking Integritas dan Navigasi Tulisan Asli</span>
             </div>
             {/* <h1
               className="text-5xl text-[#111111] leading-none"
@@ -160,7 +160,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             </button>
           </form>
 
-          <p className="text-center text-xs text-[#B9B6AD] mt-8">
+          <p className="text-center text-xs text-[#B9B6AD] mt-6 mb-3">
             Belum punya akun?{' '}
             <a
               href="#"
@@ -214,18 +214,22 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between h-full p-12">
-          <div>
+          <div className="-mb-8">
             <div className="flex items-center gap-2 mb-12">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#AABED6]" />
-              <span className="text-[#AABED6] text-xs tracking-[0.3em] uppercase">Tracking Integritas dan Navigasi Tulisan Asli</span>
+              {/* <div className="w-1.5 h-1.5 rounded-full bg-[#AABED6]" /> */}
+              <span className="text-[#AABED6] text-xs tracking-[0.3em] uppercase opacity-50">Presented to you by Team 19 Juta Lapangan Padel</span>
             </div>
 
             <div style={{ fontFamily: "'Playfair Display', serif" }}>
               <p className="text-white/50 text-base mb-3 tracking-wide uppercase">Mengapa TINTA?</p>
-              <h2 className="text-4xl text-white font-light leading-tight">
-                Bukan mendeteksi AI, tetapi<br />
-                <span className="font-semibold italic">Membuktikan proses belajar.</span>
-              </h2>
+              <div>
+                <h2 className="text-4xl text-white font-light leading-tight">
+                  Bukan mendeteksi AI, tetapi
+                </h2>
+                <h2 className="text-4xl text-white leading-tight font-semibold italic">
+                  Membuktikan proses belajar.
+                </h2>
+              </div>
             </div>
           </div>
 
@@ -240,7 +244,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
 
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-white/10" />
-            <span className="text-white/30 text-xs">© 2025 TINTA</span>
+            <span className="text-white/30 text-xs">© 2026 TINTA</span>
           </div>
         </div>
       </section>

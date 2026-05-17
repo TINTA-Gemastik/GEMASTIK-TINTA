@@ -209,11 +209,11 @@ export default function MahasiswaDashboard() {
           <h1 className="text-2xl font-semibold text-tinta-dark">
             Hello, {profile?.full_name?.split(' ')[0] ?? 'Student'}.
           </h1>
-          <p className="text-sm text-tinta-warm mt-1">
-            {[profile?.npm && `NPM ${profile.npm}`, profile?.university]
-              .filter(Boolean)
-              .join(' · ') || 'TINTA Writing Environment'}
-          </p>
+          <div className="rounded-2xl bg-[#2A4D88] p-2 w-fit min-w-[120px] items-center justify-center text-center mt-2">
+            <p className="text-sm font-semibold text-white">
+              {profile?.university ?? 'TINTA Mahasiswa Panel'}
+            </p>
+          </div>
         </div>
 
         {/* ── Clarification Alert ───────────────────────────────────────────── */}
