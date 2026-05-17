@@ -153,14 +153,14 @@ export default function MahasiswaDashboard() {
 
         {/* ── Welcome ──────────────────────────────────────────────────────────── */}
         <div>
-          <h1 className="text-2xl font-semibold text-tinta-dark">
-            Halo, {profile?.full_name?.split(' ')[0] ?? 'Mahasiswa'}.
+          <h1 className="text-3xl font-bold text-tinta-dark">
+            Halo, {profile?.full_name ?? 'Mahasiswa'}.
           </h1>
-          <p className="text-sm text-tinta-warm mt-1">
-            {[profile?.npm && `NPM ${profile.npm}`, profile?.university]
-              .filter(Boolean)
-              .join(' · ') || 'TINTA Writing Environment'}
-          </p>
+          <div className="rounded-2xl bg-[#2A4D88] p-2 w-[25%] items-center justify-center text-center border border-1 border-black mt-2">
+            <p className="text-base font-semibold text-white">
+              {profile?.university ?? 'TINTA Mahasiswa Panel'}
+            </p>
+          </div>
         </div>
 
         {/* ── Active Tasks ─────────────────────────────────────────────────────── */}

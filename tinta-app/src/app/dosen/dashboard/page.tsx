@@ -130,9 +130,10 @@ export default function DosenDashboard() {
       {/* ── Header ───────────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-tinta-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
-          <span className="font-playfair text-xl font-bold text-tinta-main tracking-tight select-none">
-            TINTA
-          </span>
+          <img 
+            src="../icons/logo.png"
+            className="w-[10%] mt-2 mb-2"
+          />
           <div className="flex items-center gap-5">
             <span className="text-sm text-tinta-dark hidden sm:block">
               {profile?.full_name}
@@ -151,12 +152,14 @@ export default function DosenDashboard() {
 
         {/* ── Welcome ──────────────────────────────────────────────────────────── */}
         <div>
-          <h1 className="text-2xl font-semibold text-tinta-dark">
-            Selamat datang, {profile?.full_name?.split(' ')[0] ?? 'Dosen'}.
+          <h1 className="text-3xl font-semibold text-tinta-dark mb-2">
+            Selamat datang, {profile?.full_name ?? 'Dosen'}.
           </h1>
-          <p className="text-sm text-tinta-warm mt-1">
-            {profile?.university ?? 'TINTA Dosen Panel'}
-          </p>
+          <div className="rounded-2xl bg-[#2A4D88] p-2 w-[20%] items-center justify-center text-center border border-1 border-black">
+            <p className="text-base font-semibold text-white">
+              {profile?.university ?? 'TINTA Dosen Panel'}
+            </p>
+          </div>
         </div>
 
         {/* ── Stat Cards ───────────────────────────────────────────────────────── */}
@@ -184,22 +187,22 @@ export default function DosenDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-tinta-border bg-[#F8F7F5]">
-                    <th className="text-left text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-5 py-3">
+                    <th className="text-left text-[11px] font-semibold tracking-wider uppercase text-gray-600 px-5 py-3">
                       Judul Tugas
                     </th>
-                    <th className="text-left text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-4 py-3 hidden sm:table-cell">
+                    <th className="text-left text-[11px] font-semibold tracking-wider uppercase text-gray-600 px-4 py-3 hidden sm:table-cell">
                       Deadline
                     </th>
-                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-4 py-3">
+                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-gray-600 px-4 py-3">
                       Mahasiswa
                     </th>
-                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-4 py-3">
+                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-gray-600 px-4 py-3">
                       Submission
                     </th>
-                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-4 py-3 hidden md:table-cell">
+                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-gray-600 px-4 py-3 hidden md:table-cell">
                       Avg LES
                     </th>
-                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-tinta-warm px-4 py-3">
+                    <th className="text-center text-[11px] font-semibold tracking-wider uppercase text-gray-00 px-4 py-3">
                       Flagged
                     </th>
                   </tr>
@@ -222,7 +225,7 @@ export default function DosenDashboard() {
                           )}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-xs text-tinta-warm whitespace-nowrap hidden sm:table-cell">
+                      <td className="px-4 py-4 text-xs font-medium text-tinta-dark whitespace-nowrap hidden sm:table-cell">
                         {format(new Date(task.deadline), 'dd MMM yyyy', { locale: idLocale })}
                       </td>
                       <td className="px-4 py-4 text-center text-sm font-mono text-tinta-dark">
@@ -301,7 +304,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-white rounded-xl border border-tinta-border px-5 py-5">
-      <p className="text-[11px] font-semibold tracking-wider uppercase text-tinta-warm">
+      <p className="text-[12px] font-semibold tracking-wider uppercase text-gray-400">
         {label}
       </p>
       <p className={`text-3xl font-semibold mt-2 ${valueClass ?? 'text-tinta-dark'}`}>

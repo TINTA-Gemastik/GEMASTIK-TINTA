@@ -552,9 +552,9 @@ export function AnalyticsSidebar({
       <button
         onClick={() => setIsOpen(o => !o)}
         title={isOpen ? "Hide Dashboard" : "Open Dashboard"}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-8 h-16 bg-white text-[#2D4E71] rounded-l-2xl shadow-lg hover:bg-[#f7f7f6] transition-colors border border-[#B9B6AD]/30 border-r-0"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-12 h-20 bg-[#2A4D88] text-white hover:text-black rounded-l-2xl shadow-lg hover:bg-[#f7f7f6] transition-colors border border-[#B9B6AD]/30 border-r-0"
       >
-        {isOpen ? <EyeOff size={15} /> : <Eye size={15} />}
+        {isOpen ? <EyeOff size={26} /> : <Eye size={26} />}
       </button>
 
       {/* ── Sidebar panel ──────────────────────────────────────────────────── */}
