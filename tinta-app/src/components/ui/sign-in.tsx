@@ -64,30 +64,32 @@ export const SignInPage: React.FC<SignInPageProps> = ({
           }}
         />
 
-        <div className="w-full max-w-md relative z-10">
+        <div className="-mt-8 -ml-8 w-full max-w-md relative z-10">
 
           {/* TINTA wordmark */}
-          <div className="mb-10">
+          <div className="mb-9">
+            <img 
+              src="icons/logo.png"
+              className="w-[50%] mt-2 mb-2"
+            />
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-[#2D4E71]" />
               <span className="text-xs tracking-[0.3em] uppercase text-[#B9B6AD] font-medium">Platform Integritas Akademik</span>
             </div>
-            <h1
+            {/* <h1
               className="text-5xl text-[#111111] leading-none"
               style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700 }}
             >
               TINTA
-            </h1>
-            <div className="mt-2 h-px w-16 bg-[#2D4E71]" />
+            </h1> */}
           </div>
 
           {/* Heading */}
           <div className="mb-8">
             <h2
-              className="text-2xl text-[#111111] mb-2"
+              className="text-3xl text-[#111111] mb-2"
               style={{ fontFamily: "'Playfair Display', serif", fontWeight: 400 }}
             >
-              {title || <>Selamat datang<br /><span className="font-semibold">kembali.</span></>}
+              {title || <>Selamat datang <span className="font-semibold">kembali.</span></>}
             </h2>
             <p className="text-sm text-[#B9B6AD]">
               {description || "Masuk untuk melanjutkan sesi penulisanmu."}
