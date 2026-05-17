@@ -28,13 +28,13 @@ const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const TestimonialCard = ({ testimonial, delay }: { testimonial: Testimonial; delay: string }) => (
-  <div className={`${delay} flex items-start gap-3 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-5 w-64`}>
+  <div className={`${delay} flex items-start gap-3 mt-5 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 p-5 w-full lg:w-[85%] xl:w-[70%]`}>
     {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={testimonial.avatarSrc} className="h-10 w-10 object-cover rounded-2xl" alt="avatar" />
+    <img src={testimonial.avatarSrc} className="h-10 w-10 shrink-0 object-cover rounded-2xl" alt="avatar" />
     <div className="text-sm leading-snug">
       <p className="flex items-center gap-1 font-medium text-white">{testimonial.name}</p>
-      <p className="text-[#AABED6]">{testimonial.handle}</p>
-      <p className="mt-1 text-white/80">{testimonial.text}</p>
+      <p className="text-[#AABED6] text-xs opacity-90">{testimonial.handle}</p>
+      <p className="mt-2 text-white/80 leading-relaxed">{testimonial.text}</p>
     </div>
   </div>
 );
@@ -172,11 +172,11 @@ export const SignInPage: React.FC<SignInPageProps> = ({
           </p>
 
           {/* Test account hint — remove in production */}
-          <div className="mt-6 p-3 rounded-xl border border-[#AABED6]/40 bg-[#AABED6]/10">
+          {/* <div className="mt-6 p-3 rounded-xl border border-[#AABED6]/40 bg-[#AABED6]/10">
             <p className="text-xs text-[#2D4E71] text-center">
               <span className="font-semibold">Akun demo:</span> tinta@app · burunghantu123
             </p>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -197,11 +197,15 @@ export const SignInPage: React.FC<SignInPageProps> = ({
           className="absolute inset-0 flex items-center justify-center select-none pointer-events-none"
           style={{ fontFamily: "'Playfair Display', serif" }}
         >
-          <span
+          <img
+            src="icons/logo-single.png"
+            className="ml-8 w-[40%] opacity-25"
+          />
+          {/* <span
             className="text-[22vw] font-bold text-white/[0.04] leading-none"
           >
             T
-          </span>
+          </span> */}
         </div>
 
         {/* Diagonal ink accent */}
@@ -217,10 +221,10 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             </div>
 
             <div style={{ fontFamily: "'Playfair Display', serif" }}>
-              <p className="text-white/50 text-sm mb-3 tracking-wide uppercase">Mengapa TINTA?</p>
+              <p className="text-white/50 text-base mb-3 tracking-wide uppercase">Mengapa TINTA?</p>
               <h2 className="text-4xl text-white font-light leading-tight">
-                Bukan mendeteksi AI.<br />
-                <span className="font-semibold italic">Membuktikan<br />proses belajar.</span>
+                Bukan mendeteksi AI, tetapi<br />
+                <span className="font-semibold italic">Membuktikan proses belajar.</span>
               </h2>
             </div>
           </div>

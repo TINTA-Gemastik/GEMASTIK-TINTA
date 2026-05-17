@@ -46,16 +46,16 @@ export default function LoginPage() {
 
   const sampleTestimonials = [
     {
-      avatarSrc: 'https://randomuser.me/api/portraits/women/44.jpg',
-      name: 'Amira Putri',
-      handle: 'Mahasiswi S1 UI',
-      text: 'TINTA membuktikan kerja kerasku secara otomatis. Tidak perlu khawatir dituduh pakai AI lagi.',
+      avatarSrc: 'images/rania.png',
+      name: 'Rania Aqila',
+      handle: 'Mahasiswi Fasilkom UI | Jurusan Sistem Informasi',
+      text: 'TINTA dapat membantu saya dalam memberikan bukti yang konkrit bahwa tugas yang saya kerjakan merupakan hasil tangan sendiri, bukan oleh AI.',
     },
     {
-      avatarSrc: 'https://randomuser.me/api/portraits/men/32.jpg',
-      name: 'Dr. Budi Santoso',
-      handle: 'Dosen Komunikasi, UGM',
-      text: 'Akhirnya ada alat yang membantu saya menilai proses belajar, bukan hanya hasilnya.',
+      avatarSrc: 'images/zhillan.png',
+      name: 'Zhillan Baniaksa',
+      handle: 'Mahasiswa Fasilkom UI | Jurusan Ilmu Komputer KKI',
+      text: 'melalui fitur yang melimpah yang ditawarkan oleh TINTA, saya dapat mengerjakan tugas saya dengan lebih mudah.',
     },
   ]
 
