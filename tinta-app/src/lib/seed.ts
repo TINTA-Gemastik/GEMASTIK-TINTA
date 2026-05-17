@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import path from 'path'
-import crypto from 'crypto'
 
 const dirname = import.meta.dirname;
 dotenv.config({ path: path.resolve(dirname, '../../.env.local') })
@@ -76,6 +75,8 @@ async function seed() {
       deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       max_paste_ratio: 0.2
     }).select().single()
+
+    if (taskErr) console.log('Info Task:', taskErr.message)
 
     if (task) {
       // 6. Enroll Mahasiswa

@@ -79,8 +79,8 @@ export function computeWordDiff(initialText: string, currentText: string): WordD
 }
 
 // Estimate from event stream when text snapshots aren't available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function estimateWordDiffFromEvents(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   events:           any[],
   initialWordCount: number,
   currentWordCount: number

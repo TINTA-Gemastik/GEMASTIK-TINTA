@@ -87,7 +87,7 @@ export function SentencePopover({
       {/* Sentence preview */}
       <div className="px-4 py-2 bg-[#F8F7F5] border-b border-[#B9B6AD]/10">
         <p className="text-[10px] text-[#B9B6AD] truncate" title={sentenceText}>
-          "{sentenceText.length > 60 ? sentenceText.slice(0, 57) + '…' : sentenceText}"
+          &quot;{sentenceText.length > 60 ? sentenceText.slice(0, 57) + '…' : sentenceText}&quot;
         </p>
       </div>
 

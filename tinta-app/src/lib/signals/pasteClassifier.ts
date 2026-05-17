@@ -3,7 +3,7 @@
 const URL_RE    = /^https?:\/\//i
 const DOI_RE    = /\bdoi\.org\b/i
 const YEAR_RE   = /\(\d{4}\)/            // e.g. (2023)
-const BIBLIO_RE = /\(\d{4}\)/            // year in parens + comma = bibliography pattern
+// const BIBLIO_RE = /\(\d{4}\)/            // year in parens + comma = bibliography pattern
 
 export interface PasteClassification {
   autoClassified: boolean

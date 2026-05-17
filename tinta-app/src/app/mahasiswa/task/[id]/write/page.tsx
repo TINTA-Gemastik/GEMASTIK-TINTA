@@ -142,6 +142,8 @@ export default function WritePage() {
     interpretation?: string
     flags?:          string[]
   }> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    void _text;
     // Compute behavioral signals from live event stream
     const keystrokeEvents  = liveEvents.filter(e => e.event_type === 'keystroke' && !e.payload.is_delete_key)
     const windowHiddenEvts = liveEvents.filter(e => e.event_type === 'window_hidden')

@@ -19,7 +19,9 @@ export interface PlagiarismAnalysisResult {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function analyzePlagiarismRisk(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   events:         any[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pasteEvents:    any[],
   finalDocLength: number,
 ): PlagiarismAnalysisResult {

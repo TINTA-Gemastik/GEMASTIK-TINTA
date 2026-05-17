@@ -35,7 +35,7 @@ function SentenceTooltip({ sentence, x, y }: TooltipProps) {
       style={{ left: Math.min(x, window.innerWidth - 240), top: Math.max(y - 110, 8) }}
     >
       <p className="font-semibold text-[#111111] mb-1.5 leading-snug line-clamp-2">
-        "{sentence.sentence.slice(0, 60)}{sentence.sentence.length > 60 ? '…' : ''}"
+        &quot;{sentence.sentence.slice(0, 60)}{sentence.sentence.length > 60 ? '…' : ''}&quot;
       </p>
       <div className="space-y-0.5 text-[#6b7280]">
         <p>First typed: <span className="text-[#111111] font-medium">{fmt(sentence.firstTypedAt)}</span></p>
