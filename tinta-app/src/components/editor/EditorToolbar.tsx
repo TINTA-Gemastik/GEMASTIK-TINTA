@@ -88,7 +88,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
     editor.isActive('heading', { level: 3 }) ? '3' : '0'
 
   return (
-    <div className="bg-white border-b border-[#B9B6AD]/20 px-4 py-2 flex items-center gap-1 flex-wrap shadow-sm">
+    <div className="editor-toolbar bg-white border-b border-[#B9B6AD]/20 px-4 py-2 flex items-center gap-1 flex-wrap shadow-sm">
 
       {/* GROUP 1 — Font family ─────────────────────────────────────────────── */}
       <select

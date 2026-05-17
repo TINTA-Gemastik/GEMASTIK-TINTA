@@ -83,24 +83,29 @@ export interface PasteItem {
   source_url:       string | null
   source_year:      string | null
   timestamp:        number
+  cursor_position?: number
+  is_deleted?:      boolean
 }
 
 export interface TintaEditorHandle {
   close:   () => Promise<void>
   getText: () => string
+  getHTML: () => string
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface TintaEditorProps {
-  taskId:               string
-  userId:               string
-  initialContent?:      string
-  onEventEmitted?:      (event: TintaEventInsert) => void
-  onDocLengthChange?:   (len: number) => void
-  onPasteItemCreated?:  (item: PasteItem) => void
-  onPasteItemUpdated?:  (id: string, updates: Partial<PasteItem>) => void
-  onSelectionChange?:   (text: string) => void
+  taskId:                string
+  userId:                string
+  initialContent?:       string
+  onEventEmitted?:       (event: TintaEventInsert) => void
+  onDocLengthChange?:    (len: number) => void
+  onTextChange?:         (text: string) => void
+  onPasteItemCreated?:   (item: PasteItem) => void
+  onPasteItemUpdated?:   (id: string, updates: Partial<PasteItem>) => void
+  onSelectionChange?:    (text: string) => void
+  onPasteMaybeDeleted?:  (cursorPos: number, deletedCount: number) => void
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -112,7 +117,7 @@ interface InnerProps extends TintaEditorProps {
 }
 
 const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
-  ({ sessionId, taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange }, ref) => {
+  ({ sessionId, taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onTextChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange, onPasteMaybeDeleted }, ref) => {
 
     // ── Core recording state ────────────────────────────────────────────────
     const startedAtRef  = useRef(Date.now())
@@ -170,6 +175,8 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
             source_url:        null,
             source_year:       null,
             timestamp:         event.timestamp,
+            cursor_position:   event.cursor_position ?? undefined,
+            is_deleted:        false,
           }
           onPasteItemCreated?.(item)
 
@@ -190,8 +197,13 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         onEventEmitted?.(event)
 
         if (event.event_type === 'paste') void handlePaste(event)
+
+        if (event.event_type === 'delete') {
+          const p = event.payload as Record<string, number>
+          onPasteMaybeDeleted?.(event.cursor_position ?? 0, p.deleted_char_count ?? 0)
+        }
       },
-      [handlePaste, onEventEmitted]
+      [handlePaste, onEventEmitted, onPasteMaybeDeleted]
     )
 
     // ── TipTap editor ───────────────────────────────────────────────────────
@@ -209,17 +221,26 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         Superscript,
         Image.configure({ inline: false, allowBase64: true }),
         TabIndent,
-        Placeholder.configure({ placeholder: 'Start writing here…' }),
+        Placeholder.configure({ placeholder: 'Mulai menulis di sini… / Start writing here…' }),
         CharacterCount,
         TintaRecorder.configure({ sessionId, userId, taskId, onEvent: handleEvent }),
       ],
       content: initialContent,
-      editorProps: { attributes: { class: 'focus:outline-none' } },
+      editorProps: {
+        attributes: {
+          class:       'focus:outline-none',
+          lang:        'id',
+          spellcheck:  'false',
+          autocorrect: 'off',
+          autocomplete: 'off',
+        },
+      },
       onUpdate: ({ editor: ed }) => {
         const text  = ed.getText()
         setUnconfirmedCount(detectUnconfirmedFacts(text).length)
         const len = (ed.storage.characterCount?.characters() as number | undefined) ?? text.length
         onDocLengthChange?.(len)
+        onTextChange?.(text)
       },
     })
 
@@ -285,7 +306,15 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         await closeSession(sessionId, eventsRef.current, startedAtRef.current)
       },
       getText: () => editor?.getText() ?? '',
+      getHTML: () => editor?.getHTML() ?? '',
     }))
+
+    // Load draft content if initialContent arrives after editor mounts (async timing)
+    useEffect(() => {
+      if (editor && initialContent && editor.isEmpty) {
+        editor.commands.setContent(initialContent, { emitUpdate: false })
+      }
+    }, [editor, initialContent])
 
     // ── Paste modal handlers ────────────────────────────────────────────────
     const onDeclarePaste = useCallback(
@@ -301,7 +330,6 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
           update.source_title  = sourceData.title  || null
           update.source_author = sourceData.author || null
           update.source_url    = sourceData.url    || null
-          update.source_year   = sourceData.year   || null
         }
         await supabase.from('paste_events').update(update).eq('id', pasteEventId)
         onPasteItemUpdated?.(pasteEventId, {
@@ -309,7 +337,6 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
           source_title:  sourceData?.title  || null,
           source_author: sourceData?.author || null,
           source_url:    sourceData?.url    || null,
-          source_year:   sourceData?.year   || null,
         })
       },
       [onPasteItemUpdated]
@@ -325,15 +352,14 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         if (!snapshot) return
         const supabase = createClient()
         await supabase.from('document_references').insert({
-          submission_id: null,
-          student_id:    userId,
-          sentence_text: snapshot.text,
-          source_title:  source.title  || null,
-          source_author: source.author || null,
-          source_url:    source.url    || null,
-          source_year:   source.year   || null,
+          submission_id:    null,
+          student_id:       userId,
+          sentence_text:    snapshot.text,
+          source_title:     source.title  || null,
+          source_author:    source.author || null,
+          source_url:       source.url    || null,
           is_paste_derived: false,
-          confirmed:     true,
+          confirmed:        true,
         })
       },
       [referencePopover, userId]
@@ -369,11 +395,11 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         <PageLayoutSettings layout={layout} onChange={setLayout} />
 
         {/* Canvas — Word-style paged layout */}
-        <div className="flex-1 overflow-y-auto bg-[#e8e8e8]">
+        <div className="editor-canvas flex-1 overflow-y-auto bg-[#e8e8e8]">
           <div style={{ zoom: layout.zoom }}>
             <div className="py-10 px-4">
               <div
-                className="bg-white mx-auto shadow-[0_2px_8px_rgba(0,0,0,0.15)] relative"
+                className="editor-page bg-white mx-auto shadow-[0_2px_8px_rgba(0,0,0,0.15)] relative"
                 style={{
                   width:     `${layout.paperWidth}px`,
                   minHeight: `${layout.paperHeight}px`,
@@ -390,7 +416,7 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
                 }}
               >
                 <PageBreakIndicators editorRef={contentDivRef} />
-                <div ref={contentDivRef}>
+                <div ref={contentDivRef} lang="id" spellCheck={false}>
                   <EditorContent editor={editor} />
                 </div>
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-[#B9B6AD]">
@@ -402,7 +428,7 @@ const TintaEditorInner = forwardRef<TintaEditorHandle, InnerProps>(
         </div>
 
         {/* Character count footer */}
-        <div className="shrink-0 border-t border-[#B9B6AD]/30 bg-white px-6 py-2 flex items-center text-xs text-[#B9B6AD]">
+        <div className="editor-bottom-bar shrink-0 border-t border-[#B9B6AD]/30 bg-white px-6 py-2 flex items-center text-xs text-[#B9B6AD]">
           {charCount.toLocaleString()} characters
         </div>
 
@@ -452,7 +478,7 @@ TintaEditorInner.displayName = 'TintaEditorInner'
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
-  ({ taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange }, ref) => {
+  ({ taskId, userId, initialContent = '', onEventEmitted, onDocLengthChange, onTextChange, onPasteItemCreated, onPasteItemUpdated, onSelectionChange, onPasteMaybeDeleted }, ref) => {
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [error,     setError]     = useState<string | null>(null)
 
@@ -460,6 +486,7 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
     useImperativeHandle(ref, () => ({
       close:   async () => { await innerRef.current?.close() },
       getText: ()      => innerRef.current?.getText() ?? '',
+      getHTML: ()      => innerRef.current?.getHTML() ?? '',
     }))
 
     useEffect(() => {
@@ -494,9 +521,11 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
         initialContent={initialContent}
         onEventEmitted={onEventEmitted}
         onDocLengthChange={onDocLengthChange}
+        onTextChange={onTextChange}
         onPasteItemCreated={onPasteItemCreated}
         onPasteItemUpdated={onPasteItemUpdated}
         onSelectionChange={onSelectionChange}
+        onPasteMaybeDeleted={onPasteMaybeDeleted}
       />
     )
   }

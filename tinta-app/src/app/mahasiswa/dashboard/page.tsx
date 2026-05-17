@@ -259,20 +259,28 @@ export default function MahasiswaDashboard() {
                           {dur && ` · ${dur} aktif`}
                         </p>
                       </div>
-                      {isOpen && (
-                        <span className="text-[10px] font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full shrink-0">
-                          Aktif
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isOpen && (
+                          <span className="text-[10px] font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                            Aktif
+                          </span>
+                        )}
+                        <Link
+                          href={`/mahasiswa/task/${session.task_id}/replay`}
+                          className="text-[11px] font-medium text-[#2D4E71] hover:text-[#1e3a56] bg-[#2D4E71]/8 hover:bg-[#2D4E71]/15 px-2.5 py-1 rounded-full transition-colors whitespace-nowrap"
+                        >
+                          ▶ Watch Replay
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Git-style delta */}
                     <div className="flex items-center gap-4 mt-2.5 text-xs font-mono flex-wrap">
                       <span className="text-green-600 font-medium">
-                        +{session.chars_typed}
+                        +{session.line_insertions ?? 0} insertions(+)
                       </span>
                       <span className="text-red-500 font-medium">
-                        −{session.chars_deleted}
+                        -{session.line_deletions ?? 0} deletions(-)
                       </span>
                       {session.paste_event_count > 0 && (
                         <span className="text-tinta-warm">
@@ -318,12 +326,20 @@ export default function MahasiswaDashboard() {
                         {last && ` · Terakhir ${format(new Date(last.started_at), 'd MMM yyyy', { locale: idLocale })}`}
                       </p>
                     </div>
-                    <Link
-                      href={`/mahasiswa/task/${task.id}/write`}
-                      className="text-xs text-tinta-main hover:text-tinta-accent-hover transition-colors shrink-0 whitespace-nowrap"
-                    >
-                      Buka →
-                    </Link>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Link
+                        href={`/mahasiswa/task/${task.id}/replay`}
+                        className="text-[11px] font-medium text-[#2D4E71] hover:text-[#1e3a56] transition-colors whitespace-nowrap"
+                      >
+                        ▶ Replay
+                      </Link>
+                      <Link
+                        href={`/mahasiswa/task/${task.id}/write`}
+                        className="text-xs text-tinta-main hover:text-tinta-accent-hover transition-colors shrink-0 whitespace-nowrap"
+                      >
+                        Buka →
+                      </Link>
+                    </div>
                   </div>
                 )
               })}

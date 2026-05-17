@@ -75,6 +75,8 @@ export interface Session {
   tab_switch_count: number
   idle_periods: number
   final_doc_length: number
+  line_insertions?: number
+  line_deletions?:  number
 }
 
 export interface EventPayloadKeystroke {

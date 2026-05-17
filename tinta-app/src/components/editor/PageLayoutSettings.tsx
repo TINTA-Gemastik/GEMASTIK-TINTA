@@ -79,7 +79,7 @@ export function PageLayoutSettings({ layout, onChange }: PageLayoutSettingsProps
   return (
     <>
       {/* Settings strip */}
-      <div className="shrink-0 h-9 flex items-center gap-6 px-6 bg-[#f0f0f0] border-b border-[#B9B6AD]/30">
+      <div className="layout-drawer shrink-0 h-9 flex items-center gap-6 px-6 bg-[#f0f0f0] border-b border-[#B9B6AD]/30">
 
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] text-[#B9B6AD] font-medium whitespace-nowrap">Margins:</span>

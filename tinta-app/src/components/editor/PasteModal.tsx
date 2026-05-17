@@ -10,7 +10,6 @@ export interface PasteSourceData {
   title:  string
   author: string
   url:    string
-  year:   string
 }
 
 interface PasteModalProps {
@@ -53,7 +52,7 @@ export function PasteModal({ pastedText, pasteEventId, onDeclare, onDismiss }: P
   const [selected,   setSelected]   = useState<string | null>(null)
   const [showSource, setShowSource] = useState(false)
   const [source, setSource] = useState<PasteSourceData>({
-    title: '', author: '', url: '', year: '',
+    title: '', author: '', url: '',
   })
 
   const preview = pastedText.length > 120
@@ -188,22 +187,13 @@ export function PasteModal({ pastedText, pasteEventId, onDeclare, onDismiss }: P
                     onChange={e => setSource(s => ({ ...s, author: e.target.value }))}
                     className={inputCls}
                   />
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="URL or DOI"
-                      value={source.url}
-                      onChange={e => setSource(s => ({ ...s, url: e.target.value }))}
-                      className={inputCls}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Year"
-                      value={source.year}
-                      onChange={e => setSource(s => ({ ...s, year: e.target.value }))}
-                      className={`${inputCls} w-20 shrink-0`}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    placeholder="Link / URL (optional)"
+                    value={source.url}
+                    onChange={e => setSource(s => ({ ...s, url: e.target.value }))}
+                    className={inputCls}
+                  />
                 </div>
               </motion.div>
             )}

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import type { TintaEventInsert } from '@/types'
+import { estimateWordDiffFromEvents } from '@/lib/signals/lineDiff'
 
 // ─── createSession ────────────────────────────────────────────────────────────
 
@@ -71,6 +72,8 @@ export async function closeSession(
 ): Promise<void> {
   const summary          = computeSessionSummary(events)
   const durationActiveMs = Date.now() - startedAt
+  const finalWords       = Math.round(summary.final_doc_length / 5.5)
+  const lineDiff         = estimateWordDiffFromEvents(events, 0, finalWords)
 
   const supabase = createClient()
   const { error } = await supabase
@@ -78,6 +81,8 @@ export async function closeSession(
     .update({
       ended_at:           new Date().toISOString(),
       duration_active_ms: durationActiveMs,
+      line_insertions:    lineDiff.insertions,
+      line_deletions:     lineDiff.deletions,
       ...summary,
     })
     .eq('id', sessionId)

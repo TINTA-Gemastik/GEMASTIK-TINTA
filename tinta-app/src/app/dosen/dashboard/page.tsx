@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { createClient } from '@/lib/supabase/client'
@@ -210,12 +211,16 @@ export default function DosenDashboard() {
                       className={`border-b border-tinta-border last:border-0 hover:bg-tinta-main/5 transition-colors ${i % 2 === 0 ? '' : 'bg-[#FAFAF9]'}`}
                     >
                       <td className="px-5 py-4">
-                        <p className="font-medium text-tinta-dark">{task.title}</p>
-                        {task.description && (
-                          <p className="text-xs text-tinta-warm mt-0.5 truncate max-w-xs">
-                            {task.description}
+                        <Link href={`/dosen/class/${task.id}`} className="group">
+                          <p className="font-medium text-tinta-dark group-hover:text-tinta-main transition-colors">
+                            {task.title}
                           </p>
-                        )}
+                          {task.description && (
+                            <p className="text-xs text-tinta-warm mt-0.5 truncate max-w-xs">
+                              {task.description}
+                            </p>
+                          )}
+                        </Link>
                       </td>
                       <td className="px-4 py-4 text-xs text-tinta-warm whitespace-nowrap hidden sm:table-cell">
                         {format(new Date(task.deadline), 'dd MMM yyyy', { locale: idLocale })}

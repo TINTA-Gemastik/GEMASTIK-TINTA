@@ -10,7 +10,6 @@ export interface ReferenceSourceData {
   title:  string
   author: string
   url:    string
-  year:   string
 }
 
 interface ReferencePopoverProps {
@@ -29,7 +28,7 @@ export function ReferencePopover({
   onDismiss,
 }: ReferencePopoverProps) {
   const [source, setSource] = useState<ReferenceSourceData>({
-    title: '', author: '', url: '', year: '',
+    title: '', author: '', url: '',
   })
   const [saved,     setSaved]     = useState(false)
   const [fileName,  setFileName]  = useState('')
@@ -139,22 +138,13 @@ export function ReferencePopover({
               onChange={e => setSource(s => ({ ...s, author: e.target.value }))}
               className={inputCls}
             />
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="URL / DOI"
-                value={source.url}
-                onChange={e => setSource(s => ({ ...s, url: e.target.value }))}
-                className={inputCls}
-              />
-              <input
-                type="text"
-                placeholder="Year"
-                value={source.year}
-                onChange={e => setSource(s => ({ ...s, year: e.target.value }))}
-                className={`${inputCls} w-20 shrink-0`}
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Link / URL (optional)"
+              value={source.url}
+              onChange={e => setSource(s => ({ ...s, url: e.target.value }))}
+              className={inputCls}
+            />
             {/* Upload source file (placeholder) */}
             <label className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-dashed border-[#AABED6] hover:bg-[#AABED6]/10 cursor-pointer transition-colors">
               <Upload size={11} className="text-[#2D4E71]" />

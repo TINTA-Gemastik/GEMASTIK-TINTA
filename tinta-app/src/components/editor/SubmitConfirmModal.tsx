@@ -104,7 +104,7 @@ export function SubmitConfirmModal({
             <GlowButton
               onClick={onConfirm}
               loading={submitting}
-              className="flex-1 justify-center py-2.5"
+              className="flex-1 justify-center h-11 rounded-2xl"
             >
               {submitting ? 'Submitting…' : 'Yes, Submit'}
             </GlowButton>
