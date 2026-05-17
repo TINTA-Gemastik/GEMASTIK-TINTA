@@ -89,7 +89,7 @@ export interface PasteItem {
 }
 
 export interface TintaEditorHandle {
-  close:             () => Promise<void>
+  close:             (opts?: { initialText?: string; currentText?: string }) => Promise<void>
   getText:           () => string
   getHTML:           () => string
   applyAIHighlights: (ranges: AIHighlightRange[]) => void
@@ -494,7 +494,7 @@ export const TintaEditor = forwardRef<TintaEditorHandle, TintaEditorProps>(
 
     const innerRef = useRef<TintaEditorHandle>(null)
     useImperativeHandle(ref, () => ({
-      close:             async () => { await innerRef.current?.close() },
+      close:             async (opts?) => { await innerRef.current?.close(opts) },
       getText:           ()      => innerRef.current?.getText() ?? '',
       getHTML:           ()      => innerRef.current?.getHTML() ?? '',
       applyAIHighlights: (ranges) => { innerRef.current?.applyAIHighlights(ranges) },

@@ -58,8 +58,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dosen/dashboard', request.url))
   }
 
-  // Authenticated user visiting /login or /register — send to their dashboard
-  if (pathname === '/login' || pathname === '/register') {
+  // Authenticated user visiting /login, /register, or / — send to their dashboard
+  if (pathname === '/login' || pathname === '/register' || pathname === '/') {
     const destination =
       role === 'dosen' ? '/dosen/dashboard' : '/mahasiswa/dashboard'
     return NextResponse.redirect(new URL(destination, request.url))
